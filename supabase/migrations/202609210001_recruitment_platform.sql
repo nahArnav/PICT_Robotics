@@ -215,10 +215,10 @@ create policy "audit staff read" on public.audit_logs for select using (public.i
 create policy "audit staff insert" on public.audit_logs for insert with check (public.is_staff() and actor_id = auth.uid());
 
 insert into storage.buckets (id, name, public) values ('private-applicant-files', 'private-applicant-files', false) on conflict (id) do nothing;
-create policy "private files owner read" on storage.objects for select using (bucket_id = 'private-applicant-files' and (owner_id = auth.uid() or public.is_staff()));
-create policy "private files owner upload" on storage.objects for insert with check (bucket_id = 'private-applicant-files' and owner_id = auth.uid() and (storage.foldername(name))[1] = auth.uid()::text);
-create policy "private files owner update" on storage.objects for update using (bucket_id = 'private-applicant-files' and owner_id = auth.uid()) with check (bucket_id = 'private-applicant-files' and owner_id = auth.uid());
-create policy "private files owner delete" on storage.objects for delete using (bucket_id = 'private-applicant-files' and owner_id = auth.uid());
+create policy "private files owner read" on storage.objects for select using (bucket_id = 'private-applicant-files' and (owner_id = auth.uid()::text or public.is_staff()));
+create policy "private files owner upload" on storage.objects for insert with check (bucket_id = 'private-applicant-files' and owner_id = auth.uid()::text and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "private files owner update" on storage.objects for update using (bucket_id = 'private-applicant-files' and owner_id = auth.uid()::text) with check (bucket_id = 'private-applicant-files' and owner_id = auth.uid()::text);
+create policy "private files owner delete" on storage.objects for delete using (bucket_id = 'private-applicant-files' and owner_id = auth.uid()::text);
 
 -- One realistic open cycle and the UI's domain vocabulary; safe to re-run.
 insert into public.domains (name, short_description, display_order) values

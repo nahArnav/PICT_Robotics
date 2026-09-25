@@ -1,7 +1,11 @@
 {
-  "description": "Showcase club achievements and milestones through an interactive platform, enabling members to celebrate successes and engage with the community.",
+  "title": "PICT Robotics",
+  "description": "PICT Robotics Club — Engineering machines, building innovators. A student-driven community at PICT building robots, autonomous systems, and competitive engineering projects.",
+  "icons": {
+    "icon": "/favicon.png"
+  },
   "robots": {
-    "index": false
+    "index": true
   },
   "accessibility": {
     "addBypassLinks": false,

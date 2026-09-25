@@ -1,7 +1,7 @@
 -- Security and workflow hardening for the existing recruitment schema.
 -- This migration is additive: it preserves existing records and never resets tables.
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 -- Keep the profile email synchronized with Auth, and make role records complete audit targets.
 alter table public.user_roles add column if not exists updated_at timestamptz not null default now();
@@ -206,7 +206,7 @@ alter table public.admin_invites add column if not exists token_hash text;
 alter table public.admin_invites add column if not exists revoked_at timestamptz;
 alter table public.admin_invites add column if not exists accepted_by uuid references public.profiles(id) on delete set null;
 update public.admin_invites
-set token_hash = encode(digest(token::text, 'sha256'), 'hex')
+set token_hash = encode(extensions.digest(token::text, 'sha256'), 'hex')
 where token_hash is null and token is not null;
 alter table public.admin_invites alter column token drop not null;
 update public.admin_invites set token = null where token is not null;
@@ -243,7 +243,7 @@ begin
   end if;
 
   insert into public.admin_invites (email, role, token, token_hash, created_by, expires_at)
-  values (lower(btrim(p_email)), p_role, null, encode(digest(invitation_token::text, 'sha256'), 'hex'), auth.uid(), p_expires_at)
+  values (lower(btrim(p_email)), p_role, null, encode(extensions.digest(invitation_token::text, 'sha256'), 'hex'), auth.uid(), p_expires_at)
   returning admin_invites.id, admin_invites.expires_at into id, expires_at;
 
   token := invitation_token;
@@ -277,7 +277,7 @@ begin
   if auth.uid() is null then raise exception 'Sign in before accepting an invitation'; end if;
   select * into invitation
   from public.admin_invites
-  where token_hash = encode(digest(p_token::text, 'sha256'), 'hex')
+  where token_hash = encode(extensions.digest(p_token::text, 'sha256'), 'hex')
     and accepted_at is null
     and revoked_at is null
     and expires_at > now()
