@@ -2,7 +2,7 @@ import { NavLink, Outlet, Navigate, useNavigate } from 'react-router';
 import { LayoutGrid, Users, GitBranch, ListChecks, CalendarClock, ClipboardCheck, Megaphone, FileEdit, BarChart3, Settings, Search, Bell, ChevronDown, LogOut, Mail, CalendarDays } from 'lucide-react';
 import { Logo } from '../../components/Logo';
 import { supabase } from '../../lib/supabase';
-import { isAdminRole, useAuthState } from '../../lib/auth';
+import { isAdminRole, useAuthState, useInactivityLogout } from '../../lib/auth';
 
 const nav = [
   { to: '/admin', label: 'Overview', icon: LayoutGrid, end: true },
@@ -32,7 +32,8 @@ export function AdminLayout() {
     initials: name.split(' ').map((part: string) => part[0]).join(''),
   };
 
-  const signOut = async () => { await supabase.auth.signOut(); nav_('/admin/login', { replace: true }); };
+  const signOut = async () => { await supabase.auth.signOut(); nav_('/signin', { replace: true }); };
+  useInactivityLogout(15 * 60 * 1000, signOut);
 
   return (
     <div className="min-h-screen bg-paper-2/40 lg:grid lg:grid-cols-[240px_1fr]">

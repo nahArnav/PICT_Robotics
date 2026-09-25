@@ -62,3 +62,26 @@ export function authErrorMessage(error: any, fallback: string): string {
   if (normalized.includes('relation') && normalized.includes('does not exist')) return `Database error: ${message}. Did you apply all migrations to your live Supabase project?`;
   return message || fallback;
 }
+
+export function useInactivityLogout(timeoutMs: number, onLogout: () => void) {
+  useEffect(() => {
+    let timeout: number;
+
+    const reset = () => {
+      window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => {
+        onLogout();
+      }, timeoutMs);
+    };
+
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    events.forEach((evt) => window.addEventListener(evt, reset));
+    reset();
+
+    return () => {
+      window.clearTimeout(timeout);
+      events.forEach((evt) => window.removeEventListener(evt, reset));
+    };
+  }, [timeoutMs, onLogout]);
+}
+

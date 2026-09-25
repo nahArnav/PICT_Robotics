@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Rose-Gold */
-  --color-indigo: #313131;   /* Dark grey/black — primary dark */
-  --color-tekhelet: #f7d0cb; /* Rose pink — primary */
-  --color-glaucous: #e3e4e6; /* Light grey — secondary / info */
-  --color-teal: #f6d9d5;     /* Lighter rose pink — soft accent */
-  --color-celadon: #f7d0cb;  /* Rose pink — highlight / positive CTA */
+  /* Brand palette — Shades of light grey */
+  --color-indigo: #a7a7a7;   /* Medium-light grey — primary dark */
+  --color-tekhelet: #b4b4b4; /* Lighter grey — primary */
+  --color-glaucous: #c0c0c0; /* Silver — secondary / info */
+  --color-teal: #cdcdcd;     /* Very light grey — soft accent */
+  --color-celadon: #a7a7a7;  /* Medium-light grey — highlight / positive CTA */
 
   /* Neutrals */
-  --color-ink: #313131;      
-  --color-ink-soft: #5b5d66; 
-  --color-paper: #f9fafc;    
+  --color-ink: #222222;      
+  --color-ink-soft: #555555; 
+  --color-paper: #dadada;    
   --color-paper-2: #ffffff;  
-  --color-line: #e3e4e6;     
-  --color-line-strong: #f7d0cb;
+  --color-line: #cdcdcd;     
+  --color-line-strong: #a7a7a7;
 }
 
 :root {
