@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Purple-Grey Color Palette */
-  --color-indigo: #4c516d;   /* Dark purple-grey — primary dark */
-  --color-tekhelet: #838996; /* Medium cool grey — primary */
-  --color-glaucous: #979aaa; /* Light cool grey — secondary / info */
-  --color-teal: #989898;     /* Neutral grey — soft accent */
-  --color-celadon: #8b8589;  /* Warm grey — highlight / positive CTA */
+  /* Brand palette — Grey-Lavender Colors */
+  --color-indigo: #afafaf;   /* Grey — primary dark */
+  --color-tekhelet: #c0c2ce; /* Medium grey lavender — primary */
+  --color-glaucous: #d2d4dc; /* Light grey lavender — secondary / info */
+  --color-teal: #e5e6eb;     /* Light grey — soft accent */
+  --color-celadon: #afafaf;  /* Grey — highlight / positive CTA */
 
   /* Neutrals */
-  --color-ink: #1a1c23;      /* very dark grey */
-  --color-ink-soft: #4a4f5c; 
-  --color-paper: #f4f5f7;    
-  --color-paper-2: #ebecef;  
-  --color-line: #d1d4db;     
-  --color-line-strong: #b3b7c2;
+  --color-ink: #1f2024;      /* Need a dark ink for readability */
+  --color-ink-soft: #5b5d66; 
+  --color-paper: #f8f8fa;    /* Almost white from palette */
+  --color-paper-2: #e5e6eb;  /* Light grey from palette */
+  --color-line: #d2d4dc;     
+  --color-line-strong: #c0c2ce;
 }
 
 :root {
