@@ -1,0 +1,10 @@
+{
+  "description": "Showcase club achievements and milestones through an interactive platform, enabling members to celebrate successes and engage with the community.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

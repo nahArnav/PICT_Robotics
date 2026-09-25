@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Sora', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Brand palette */
+  --color-indigo: #360568;   /* Persian Indigo — primary dark */
+  --color-tekhelet: #5b2a86; /* Tekhelet — primary */
+  --color-glaucous: #7785ac; /* Glaucous — secondary / info */
+  --color-teal: #9ac6c5;     /* Light Teal — soft accent */
+  --color-celadon: #a5e6ba;  /* Celadon — highlight / positive CTA */
+
+  /* Neutrals */
+  --color-ink: #1a1424;      /* charcoal text */
+  --color-ink-soft: #4a4358;
+  --color-paper: #faf9fc;    /* warm off-white */
+  --color-paper-2: #f2f0f7;  /* very light grey */
+  --color-line: #e5e2ee;     /* muted border */
+  --color-line-strong: #d3cee0;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-celadon);
+  color: var(--color-indigo);
+}
+
+/* Hide scrollbars until scrolling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover,
+*:focus-within {
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  background-clip: content-box;
+}
+
+@layer utilities {
+  /* Schematic blueprint grid — subtle, non-interfering */
+  .bp-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--color-indigo) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--color-indigo) 5%, transparent) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  .bp-grid-dark {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+  .bp-dots {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+  .label {
+    font-family: var(--font-mono);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+}
+
+@keyframes peek-wobble {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.animate-peek-wobble { animation: peek-wobble 2.2s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 6s linear infinite; transform-origin: center; }
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-tekhelet);
+  outline-offset: 2px;
+}

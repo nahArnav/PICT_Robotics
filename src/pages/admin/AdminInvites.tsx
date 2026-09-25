@@ -1,0 +1,10 @@
+import { useState } from 'react';
+import { Copy, UserPlus } from 'lucide-react';
+import { Button, Card, Field, Kicker, inputCls } from '../../components/ui';
+import { supabase } from '../../lib/supabase';
+
+export function AdminInvites() {
+  const [email, setEmail] = useState(''); const [role, setRole] = useState('recruiter'); const [link, setLink] = useState(''); const [notice, setNotice] = useState('');
+  const create = async (event: React.FormEvent) => { event.preventDefault(); setNotice(''); const { data: { user } } = await supabase.auth.getUser(); if (!user) return setNotice('Your session has expired.'); const { data, error } = await supabase.from('admin_invites').insert({ email, role, created_by: user.id }).select('token').single(); if (error) return setNotice(error.message); const next = `${window.location.origin}/admin/signup?invite=${data.token}`; setLink(next); setNotice('Invitation created. Share this link only with the intended club member.'); };
+  return <div className="mx-auto max-w-2xl space-y-6"><div><Kicker>Administration</Kicker><h1 className="mt-1 font-display text-2xl font-bold">Invite club administrators</h1><p className="mt-2 text-sm text-ink-soft">Only super admins can issue invitation links. Invitations expire after seven days.</p></div><Card className="p-6"><form className="space-y-4" onSubmit={create}><Field label="PICT email" required><input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} /></Field><Field label="Role"><select value={role} onChange={(e) => setRole(e.target.value)} className={inputCls}><option value="recruiter">Recruiter</option><option value="admin">Admin</option><option value="super_admin">Super admin</option></select></Field><Button variant="cta">Create invite <UserPlus size={16} /></Button></form>{notice && <p className="mt-4 text-sm text-ink-soft">{notice}</p>}{link && <div className="mt-4 flex gap-2"><input readOnly value={link} className={`${inputCls} flex-1`} /><Button variant="outline" onClick={() => navigator.clipboard.writeText(link)}><Copy size={16} /></Button></div>}</Card></div>;
+}
