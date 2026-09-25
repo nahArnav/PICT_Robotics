@@ -62,8 +62,8 @@ export function Auth({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                       if (signInError) throw signInError;
                       const role = await getCurrentRole();
                       if (isAdminRole(role)) {
-                        await supabase.auth.signOut();
-                        throw new Error('This account is for the restricted admin console. Use the admin sign-in page.');
+                        nav('/admin', { replace: true });
+                        return;
                       }
                       if (role !== 'applicant') {
                         await supabase.auth.signOut();

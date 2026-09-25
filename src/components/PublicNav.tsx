@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { Logo } from './Logo';
 import { Button } from './ui';
 import { contacts } from '../lib/data';
+import { useAuthState, isAdminRole } from '../lib/auth';
 
 const nav = [
   { to: '/', label: 'Home', end: true },
@@ -19,6 +20,7 @@ export function PublicLayout() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const loc = useLocation();
+  const { user, role, ready } = useAuthState();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -58,8 +60,11 @@ export function PublicLayout() {
             ))}
           </nav>
           <div className="hidden items-center gap-2 md:flex">
-            <Button to="/signin" variant="ghost" size="sm">Sign In</Button>
-            <Button to="/admin/login" variant="outline" size="sm">Admin Login</Button>
+            {ready && user ? (
+              <Button to={isAdminRole(role) ? "/admin" : "/dashboard"} variant="outline" size="sm">Dashboard</Button>
+            ) : (
+              <Button to="/signin" variant="ghost" size="sm">Sign In</Button>
+            )}
             <Button to="/recruitment" variant="cta" size="sm">Recruitment 2026</Button>
           </div>
           <button className="lg:hidden p-2 text-ink" onClick={() => setOpen((o) => !o)} aria-label="Menu">
@@ -74,9 +79,12 @@ export function PublicLayout() {
                 {n.label}
               </NavLink>
             ))}
-            <div className="mt-3 flex gap-2">
-              <Button to="/signin" variant="outline" size="sm" className="flex-1">Sign In</Button>
-              <Button to="/admin/login" variant="outline" size="sm" className="flex-1">Admin Login</Button>
+            <div className="mt-3">
+              {ready && user ? (
+                <Button to={isAdminRole(role) ? "/admin" : "/dashboard"} variant="outline" size="sm" className="w-full">Dashboard</Button>
+              ) : (
+                <Button to="/signin" variant="outline" size="sm" className="w-full">Sign In</Button>
+              )}
             </div>
             <div className="mt-2">
               <Button to="/recruitment" variant="cta" size="sm" className="w-full">Recruitment 2026</Button>
