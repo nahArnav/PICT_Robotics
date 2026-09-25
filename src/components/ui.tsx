@@ -9,9 +9,9 @@ const btnBase =
   'inline-flex items-center justify-center gap-2 font-medium rounded-[10px] transition-all duration-200 focus-ring disabled:opacity-45 disabled:pointer-events-none select-none';
 
 const btnVariants: Record<ButtonVariant, string> = {
-  cta: 'bg-celadon text-white hover:brightness-110 hover:-translate-y-px shadow-[0_1px_0_rgba(0,0,0,0.04)]',
+  cta: 'bg-celadon text-indigo hover:brightness-110 hover:-translate-y-px shadow-[0_1px_0_rgba(0,0,0,0.4)]',
   primary: 'bg-indigo text-white hover:bg-tekhelet',
-  outline: 'border border-line-strong text-ink hover:border-tekhelet hover:text-tekhelet bg-white/60',
+  outline: 'border border-line-strong text-ink hover:border-tekhelet hover:text-tekhelet bg-paper-2/40',
   ghost: 'text-ink-soft hover:text-tekhelet hover:bg-paper-2',
 };
 
@@ -80,7 +80,7 @@ export function StatusChip({ tone = 'neutral', dot = true, children }: { tone?: 
 export function Card({ children, className = '', hover = false }: { children: ReactNode; className?: string; hover?: boolean }) {
   return (
     <div
-      className={`rounded-[14px] border border-line bg-white ${hover ? 'transition-all duration-200 hover:border-line-strong hover:shadow-[0_8px_30px_-12px_rgba(54,5,104,0.18)]' : ''} ${className}`}
+      className={`rounded-[14px] border border-line bg-paper-2 ${hover ? 'transition-all duration-200 hover:border-line-strong hover:shadow-[0_8px_30px_-12px_rgba(54,5,104,0.18)]' : ''} ${className}`}
     >
       {children}
     </div>
@@ -139,4 +139,4 @@ export function LinkedinIcon({ size = 16, className = '' }: { size?: number; cla
 }
 
 export const inputCls =
-  'w-full rounded-[10px] border border-line-strong bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-tekhelet focus:outline-none focus:ring-2 focus:ring-tekhelet/15 transition';
+  'w-full rounded-[10px] border border-line-strong bg-paper-2 px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-tekhelet focus:outline-none focus:ring-2 focus:ring-tekhelet/15 transition';

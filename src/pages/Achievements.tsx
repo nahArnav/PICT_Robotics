@@ -87,7 +87,7 @@ export function Achievements() {
         <div className="mb-10 flex flex-wrap gap-2">
           {years.map((y) => (
             <button key={y} onClick={() => setYear(y)}
-              className={`rounded-lg border px-4 py-1.5 text-sm font-medium transition ${year === y ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-white text-ink-soft hover:border-line-strong'}`}>
+              className={`rounded-lg border px-4 py-1.5 text-sm font-medium transition ${year === y ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-paper-2 text-ink-soft hover:border-line-strong'}`}>
               {y}
             </button>
           ))}
@@ -125,7 +125,7 @@ export function Achievements() {
         {minor.length > 0 && (
           <div className="mt-12">
             <h2 className="label mb-4 text-[11px] text-glaucous">More results</h2>
-            <div className="divide-y divide-line rounded-2xl border border-line bg-white">
+            <div className="divide-y divide-line rounded-2xl border border-line bg-paper-2">
               {minor.map((a) => (
                 <div key={`${a.competition}-${a.year}-${a.rank}`} className="flex items-center gap-5 p-5 transition-colors hover:bg-paper-2/60">
                   <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-paper-2 text-tekhelet">

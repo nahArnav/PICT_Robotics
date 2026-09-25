@@ -86,13 +86,13 @@ export function Applicants() {
         <input value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} placeholder="Search applicant..." className={`${inputCls} max-w-xs`} />
         {(['All', 'FY', 'SY'] as const).map((y) => (
           <button key={y} onClick={() => { setYearF(y); setPage(1); }}
-            className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${yearF === y ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-white text-ink-soft hover:border-line-strong'}`}>
+            className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${yearF === y ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-paper-2 text-ink-soft hover:border-line-strong'}`}>
             {y}
           </button>
         ))}
         {(['all', 'submitted', 'under_review', 'shortlisted', 'interview_scheduled', 'selected', 'rejected'] as const).map((s) => (
           <button key={s} onClick={() => { setStatusF(s); setPage(1); }}
-            className={`rounded-lg border px-3 py-2 text-sm font-medium capitalize transition ${statusF === s ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-white text-ink-soft hover:border-line-strong'}`}>
+            className={`rounded-lg border px-3 py-2 text-sm font-medium capitalize transition ${statusF === s ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-paper-2 text-ink-soft hover:border-line-strong'}`}>
             {s === 'all' ? 'All Status' : statusLabel[s] ?? s}
           </button>
         ))}
@@ -173,7 +173,7 @@ export function Applicants() {
                 }
                 setSelected(new Set());
                 load();
-              }} className="rounded-lg bg-white/10 px-3 py-1.5 text-sm font-medium hover:bg-white/20">{action.label}</button>
+              }} className="rounded-lg bg-paper-2/10 px-3 py-1.5 text-sm font-medium hover:bg-paper-2/20">{action.label}</button>
             ))}
             <button onClick={async () => {
               for (const id of selected) {
@@ -226,7 +226,7 @@ function ApplicantDrawer({
       <div className="absolute inset-0 bg-indigo/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative flex h-full w-full max-w-xl flex-col bg-paper shadow-2xl">
         {/* header */}
-        <div className="border-b border-line bg-white p-5">
+        <div className="border-b border-line bg-paper-2 p-5">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <span className="grid h-12 w-12 place-items-center rounded-full bg-gradient-to-br from-tekhelet to-indigo font-display font-bold text-white">{initials}</span>
@@ -316,7 +316,7 @@ function ApplicantDrawer({
         </div>
 
         {/* footer actions */}
-        <div className="flex gap-2 border-t border-line bg-white p-4">
+        <div className="flex gap-2 border-t border-line bg-paper-2 p-4">
           <Button variant="outline" className="flex-1" disabled={busy} onClick={() => changeStatus('rejected')}>Reject</Button>
           <Button variant="cta" className="flex-1" disabled={busy} onClick={() => {
             const next: Record<string, ApplicationStatus> = {

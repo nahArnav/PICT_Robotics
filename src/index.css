@@ -8,24 +8,24 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Periwinkley Color Palette */
-  --color-indigo: #51515e;   /* Dark periwinkle/grey — primary dark */
-  --color-tekhelet: #616169; /* Dark grey — primary */
-  --color-glaucous: #989495; /* Medium warm grey — secondary / info */
-  --color-teal: #9ea1a7;     /* Medium cool grey — soft accent */
-  --color-celadon: #51515e;  /* Dark periwinkle/grey — highlight / positive CTA */
+  /* Brand palette — Private Color Palette */
+  --color-indigo: #191728;   /* Very dark slate/purple — primary dark */
+  --color-tekhelet: #474553; /* Dark slate grey — primary */
+  --color-glaucous: #75747e; /* Medium slate grey — secondary / info */
+  --color-teal: #a3a2a9;     /* Light slate grey — soft accent */
+  --color-celadon: #d1d1d4;  /* Very light grey — highlight / positive CTA */
 
-  /* Neutrals */
-  --color-ink: #111111;      
-  --color-ink-soft: #616169; 
-  --color-paper: #dfd4cb;    
-  --color-paper-2: #ffffff;  
-  --color-line: #9ea1a7;     
-  --color-line-strong: #616169;
+  /* Neutrals for Dark Theme */
+  --color-ink: #ffffff;      
+  --color-ink-soft: #d1d1d4; 
+  --color-paper: #191728;    
+  --color-paper-2: #474553;  
+  --color-line: #75747e;     
+  --color-line-strong: #a3a2a9;
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html {

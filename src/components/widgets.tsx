@@ -187,11 +187,11 @@ export function Lazy3D({
   return (
     <div ref={ref} className={className}>
       {inView ? (
-        <Suspense fallback={fallback ?? <div className="h-full w-full animate-pulse rounded-2xl bg-white/5" />}>
+        <Suspense fallback={fallback ?? <div className="h-full w-full animate-pulse rounded-2xl bg-paper-2/5" />}>
           <C className="h-full w-full" />
         </Suspense>
       ) : (
-        fallback ?? <div className="h-full w-full rounded-2xl bg-white/5" />
+        fallback ?? <div className="h-full w-full rounded-2xl bg-paper-2/5" />
       )}
     </div>
   );

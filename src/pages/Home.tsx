@@ -45,7 +45,7 @@ export function Home() {
         <div className="pointer-events-none absolute -left-10 bottom-0 h-72 w-72 rounded-full bg-glaucous/20 blur-[120px]" />
         <div className="relative mx-auto grid max-w-[1240px] items-center gap-12 px-6 py-20 md:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:py-28">
           <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-paper-2/5 px-3 py-1">
               <span className="h-1.5 w-1.5 rounded-full bg-celadon" />
               <span className="label text-[10px] text-teal">Recruitment 2026 · Applications Open</span>
             </div>
@@ -59,14 +59,14 @@ export function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button to="/achievements" variant="cta" size="lg">Explore Our Achievements <ArrowRight size={18} /></Button>
-              <Button to="/recruitment" variant="outline" size="lg" className="!border-white/25 !bg-white/5 !text-white hover:!border-celadon hover:!text-celadon">
+              <Button to="/recruitment" variant="outline" size="lg" className="!border-white/25 !bg-paper-2/5 !text-white hover:!border-celadon hover:!text-celadon">
                 Join Robotics Club
               </Button>
             </div>
             <p className="label mt-10 text-[10px] text-white/40">From curiosity to real-world solutions</p>
           </div>
           <div className="relative">
-            <div className="relative aspect-square overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+            <div className="relative aspect-square overflow-hidden rounded-2xl border border-white/10 bg-paper-2/[0.03]">
               <Corners />
               <div className="bp-dots absolute inset-0 opacity-40" />
               <Lazy3D load={loadScene} className="absolute inset-0 h-full w-full" />
@@ -129,7 +129,7 @@ export function Home() {
                 From articulated manipulators to autonomous flight — our builds run real control loops,
                 perception and planning. Here’s a taste of the stack.
               </p>
-              <div className="mt-8 grid grid-cols-3 gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="mt-8 grid grid-cols-3 gap-4 rounded-2xl border border-white/10 bg-paper-2/[0.03] p-5">
                 <Gauge label="Motor Load" value={68} color="#a5e6ba" />
                 <Gauge label="Battery" value={84} color="#9ac6c5" />
                 <Gauge label="Signal" value={92} color="#7785ac" />
@@ -137,7 +137,7 @@ export function Home() {
               <div className="mt-6"><Terminal /></div>
             </div>
             <div className="relative">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-white/10 bg-paper-2/[0.02]">
                 <Corners />
                 <Lazy3D load={loadArm} className="absolute inset-0 h-full w-full" />
                 <span className="label absolute left-4 top-4 rounded border border-teal/25 bg-indigo/50 px-2 py-0.5 text-[9px] text-teal backdrop-blur">MANIPULO · 5-DOF</span>
@@ -184,7 +184,7 @@ export function Home() {
 
       {/* ---------------- RECRUITMENT CTA ---------------- */}
       <Section className="py-20 md:py-28">
-        <div className="relative overflow-hidden rounded-3xl border border-line bg-white p-8 md:p-16">
+        <div className="relative overflow-hidden rounded-3xl border border-line bg-paper-2 p-8 md:p-16">
           <div className="bp-grid absolute inset-0 opacity-70" />
           <div className="relative grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
             <div>

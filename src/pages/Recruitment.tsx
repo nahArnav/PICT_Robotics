@@ -76,7 +76,7 @@ export function Recruitment() {
         <p className="mt-3 max-w-xl text-ink-soft">You always know where you are, what’s next and when it’s due.</p>
         <div className="mt-10 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {recruitStages.map((s, i) => (
-            <div key={s} className="relative rounded-xl border border-line bg-white p-5">
+            <div key={s} className="relative rounded-xl border border-line bg-paper-2 p-5">
               <span className="label text-[11px] text-glaucous">Step {String(i + 1).padStart(2, '0')}</span>
               <p className="mt-2 font-display font-semibold">{s}</p>
               {i < recruitStages.length - 1 && (
@@ -93,7 +93,7 @@ export function Recruitment() {
           <div className="space-y-6">
             <div>
               <h3 className="font-display text-xl font-bold">Important dates</h3>
-              <div className="mt-4 divide-y divide-line rounded-xl border border-line bg-white">
+              <div className="mt-4 divide-y divide-line rounded-xl border border-line bg-paper-2">
                 {dates.map(([label, d]) => (
                   <div key={label} className="flex items-center justify-between px-4 py-3 text-sm">
                     <span className="text-ink-soft">{label}</span>
@@ -134,7 +134,7 @@ export function Recruitment() {
 function FAQ({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="rounded-xl border border-line bg-white">
+    <div className="rounded-xl border border-line bg-paper-2">
       <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left">
         <span className="font-medium">{q}</span>
         <ChevronDown size={18} className={`shrink-0 text-tekhelet transition-transform ${open ? 'rotate-180' : ''}`} />

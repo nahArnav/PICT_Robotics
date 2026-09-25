@@ -15,7 +15,7 @@ function ProgressStepper({ status }: { status: string | null }) {
       {stages.map((s, i) => {
         const tone = s.state === 'done' ? 'done' : s.state === 'current' ? 'progress' : 'locked';
         return (
-          <div key={s.name} className={`relative rounded-xl border p-4 ${s.state === 'current' ? 'border-tekhelet bg-tekhelet/[0.04]' : 'border-line bg-white'}`}>
+          <div key={s.name} className={`relative rounded-xl border p-4 ${s.state === 'current' ? 'border-tekhelet bg-tekhelet/[0.04]' : 'border-line bg-paper-2'}`}>
             <div className="mb-2 flex items-center justify-between">
               <span className="label text-[10px] text-glaucous">{String(i + 1).padStart(2, '0')}</span>
               <span className={`grid h-6 w-6 place-items-center rounded-full ${s.state === 'done' ? 'bg-celadon text-indigo' : s.state === 'current' ? 'bg-tekhelet text-white' : 'bg-paper-2 text-ink-soft'}`}>
@@ -233,7 +233,7 @@ export function DashInterview() {
                 [MapPin, 'Venue', interview.location ?? 'TBD'],
                 [Users, 'Duration', `${interview.duration_minutes} min`],
               ].map(([Icon, k, v]: any) => (
-                <div key={k} className="bg-white p-5">
+                <div key={k} className="bg-paper-2 p-5">
                   <Icon size={16} className="text-tekhelet" />
                   <p className="label mt-2 text-[10px] text-glaucous">{k}</p>
                   <p className="mt-1 text-sm font-semibold">{v}</p>
