@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Shades of light grey */
-  --color-indigo: #a7a7a7;   /* Medium-light grey — primary dark */
-  --color-tekhelet: #b4b4b4; /* Lighter grey — primary */
-  --color-glaucous: #c0c0c0; /* Silver — secondary / info */
-  --color-teal: #cdcdcd;     /* Very light grey — soft accent */
-  --color-celadon: #a7a7a7;  /* Medium-light grey — highlight / positive CTA */
+  /* Brand palette — Light Mode Color Palette */
+  --color-indigo: #484b6a;   /* Dark purple-grey — primary dark */
+  --color-tekhelet: #9394a5; /* Medium purple-grey — primary */
+  --color-glaucous: #d2d3db; /* Light purple-grey — secondary / info */
+  --color-teal: #e4e5f1;     /* Very light purple-grey — soft accent */
+  --color-celadon: #484b6a;  /* Dark purple-grey — highlight / positive CTA */
 
   /* Neutrals */
-  --color-ink: #222222;      
-  --color-ink-soft: #555555; 
-  --color-paper: #dadada;    
+  --color-ink: #111111;      
+  --color-ink-soft: #484b6a; 
+  --color-paper: #fafafa;    
   --color-paper-2: #ffffff;  
-  --color-line: #cdcdcd;     
-  --color-line-strong: #a7a7a7;
+  --color-line: #d2d3db;     
+  --color-line-strong: #9394a5;
 }
 
 :root {
