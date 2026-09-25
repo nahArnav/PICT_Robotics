@@ -8,24 +8,24 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Private Color Palette */
-  --color-indigo: #191728;   /* Very dark slate/purple — primary dark */
-  --color-tekhelet: #474553; /* Dark slate grey — primary */
-  --color-glaucous: #75747e; /* Medium slate grey — secondary / info */
-  --color-teal: #a3a2a9;     /* Light slate grey — soft accent */
-  --color-celadon: #d1d1d4;  /* Very light grey — highlight / positive CTA */
+  /* Brand palette — Purple Teal */
+  --color-indigo: #378d94;   /* Dark Teal — primary dark */
+  --color-tekhelet: #6a408d; /* Dark purple — primary */
+  --color-glaucous: #9671bd; /* Medium purple — secondary / info */
+  --color-teal: #d1cbe5;     /* Light purple — soft accent */
+  --color-celadon: #77b5b6;  /* Teal — highlight / positive CTA */
 
-  /* Neutrals for Dark Theme */
-  --color-ink: #ffffff;      
-  --color-ink-soft: #d1d1d4; 
-  --color-paper: #191728;    
-  --color-paper-2: #474553;  
-  --color-line: #75747e;     
-  --color-line-strong: #a3a2a9;
+  /* Neutrals */
+  --color-ink: #111111;      
+  --color-ink-soft: #5b5d66; 
+  --color-paper: #fafafa;    
+  --color-paper-2: #ffffff;  
+  --color-line: #e3e4e6;     
+  --color-line-strong: #9671bd;
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {

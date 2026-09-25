@@ -9,9 +9,9 @@ const btnBase =
   'inline-flex items-center justify-center gap-2 font-medium rounded-[10px] transition-all duration-200 focus-ring disabled:opacity-45 disabled:pointer-events-none select-none';
 
 const btnVariants: Record<ButtonVariant, string> = {
-  cta: 'bg-celadon text-indigo hover:brightness-110 hover:-translate-y-px shadow-[0_1px_0_rgba(0,0,0,0.4)]',
+  cta: 'bg-celadon text-white hover:brightness-110 hover:-translate-y-px shadow-[0_1px_0_rgba(0,0,0,0.04)]',
   primary: 'bg-indigo text-white hover:bg-tekhelet',
-  outline: 'border border-line-strong text-ink hover:border-tekhelet hover:text-tekhelet bg-paper-2/40',
+  outline: 'border border-line-strong text-ink hover:border-tekhelet hover:text-tekhelet bg-paper-2/60',
   ghost: 'text-ink-soft hover:text-tekhelet hover:bg-paper-2',
 };
 
