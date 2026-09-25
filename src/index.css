@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette */
-  --color-indigo: #360568;   /* Persian Indigo — primary dark */
-  --color-tekhelet: #5b2a86; /* Tekhelet — primary */
-  --color-glaucous: #7785ac; /* Glaucous — secondary / info */
-  --color-teal: #9ac6c5;     /* Light Teal — soft accent */
-  --color-celadon: #a5e6ba;  /* Celadon — highlight / positive CTA */
+  /* Brand palette — lighter purple-teal tones */
+  --color-indigo: #6a408d;   /* Deep Purple — primary dark */
+  --color-tekhelet: #9671bd; /* Medium Purple — primary */
+  --color-glaucous: #77b5b6; /* Teal — secondary / info */
+  --color-teal: #d1cbe5;     /* Lavender Mist — soft accent */
+  --color-celadon: #378d94;  /* Deep Teal — highlight / positive CTA */
 
   /* Neutrals */
-  --color-ink: #1a1424;      /* charcoal text */
-  --color-ink-soft: #4a4358;
-  --color-paper: #faf9fc;    /* warm off-white */
-  --color-paper-2: #f2f0f7;  /* very light grey */
-  --color-line: #e5e2ee;     /* muted border */
-  --color-line-strong: #d3cee0;
+  --color-ink: #2d1f3d;      /* dark purple-tinted charcoal */
+  --color-ink-soft: #5c4f6e;
+  --color-paper: #faf8fd;    /* warm lavender off-white */
+  --color-paper-2: #f0ecf5;  /* very light lavender */
+  --color-line: #e2dced;     /* muted lavender border */
+  --color-line-strong: #d1cbe5;
 }
 
 :root {
