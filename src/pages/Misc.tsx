@@ -27,14 +27,7 @@ export function About() {
             </Card>
           ))}
         </div>
-        <div className="mt-16 grid gap-8 rounded-3xl bg-indigo p-10 text-white md:grid-cols-4">
-          {metrics.map((m) => (
-            <div key={m.label}>
-              <CountUp value={m.value} className="font-display text-4xl font-extrabold text-celadon" />
-              <div className="label mt-1 text-[10px] text-teal">{m.label}</div>
-            </div>
-          ))}
-        </div>
+
         <div className="mt-16 grid items-center gap-10 lg:grid-cols-2">
           <Reveal className="max-w-xl">
             <Kicker>Our approach</Kicker>

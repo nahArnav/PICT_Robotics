@@ -86,17 +86,6 @@ export function Home() {
           </div>
         </div>
 
-        {/* Metrics strip */}
-        <div className="relative border-t border-white/10">
-          <div className="mx-auto grid max-w-[1240px] grid-cols-2 divide-x divide-white/10 px-6 md:grid-cols-4 md:px-10">
-            {metrics.map((m) => (
-              <div key={m.label} className="px-4 py-8 first:pl-0">
-                <CountUp value={m.value} className="font-display text-4xl font-extrabold text-white md:text-5xl" />
-                <div className="label mt-1 text-[10px] text-teal">{m.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* ---------------- WHAT WE BUILD ---------------- */}

@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Slate Blue & Warm Gold tones */
-  --color-indigo: #1c2e4a;   /* Deep Slate Blue — primary dark */
-  --color-tekhelet: #345370; /* Slate Blue — primary */
-  --color-glaucous: #738c9e; /* Muted Steel Blue — secondary / info */
-  --color-teal: #e0e6ed;     /* Light Slate Grey — soft accent */
-  --color-celadon: #e6a323;  /* Warm Gold — highlight / positive CTA */
+  /* Brand palette — Purple-Grey Color Palette */
+  --color-indigo: #4c516d;   /* Dark purple-grey — primary dark */
+  --color-tekhelet: #838996; /* Medium cool grey — primary */
+  --color-glaucous: #979aaa; /* Light cool grey — secondary / info */
+  --color-teal: #989898;     /* Neutral grey — soft accent */
+  --color-celadon: #8b8589;  /* Warm grey — highlight / positive CTA */
 
   /* Neutrals */
-  --color-ink: #0f172a;      /* slate-900 */
-  --color-ink-soft: #475569; /* slate-600 */
-  --color-paper: #f8fafc;    /* slate-50 */
-  --color-paper-2: #f1f5f9;  /* slate-100 */
-  --color-line: #e2e8f0;     /* slate-200 */
-  --color-line-strong: #cbd5e1; /* slate-300 */
+  --color-ink: #1a1c23;      /* very dark grey */
+  --color-ink-soft: #4a4f5c; 
+  --color-paper: #f4f5f7;    
+  --color-paper-2: #ebecef;  
+  --color-line: #d1d4db;     
+  --color-line-strong: #b3b7c2;
 }
 
 :root {
