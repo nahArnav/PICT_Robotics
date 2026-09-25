@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Light Mode Color Palette */
-  --color-indigo: #484b6a;   /* Dark purple-grey — primary dark */
-  --color-tekhelet: #9394a5; /* Medium purple-grey — primary */
-  --color-glaucous: #d2d3db; /* Light purple-grey — secondary / info */
-  --color-teal: #e4e5f1;     /* Very light purple-grey — soft accent */
-  --color-celadon: #484b6a;  /* Dark purple-grey — highlight / positive CTA */
+  /* Brand palette — Periwinkley Color Palette */
+  --color-indigo: #51515e;   /* Dark periwinkle/grey — primary dark */
+  --color-tekhelet: #616169; /* Dark grey — primary */
+  --color-glaucous: #989495; /* Medium warm grey — secondary / info */
+  --color-teal: #9ea1a7;     /* Medium cool grey — soft accent */
+  --color-celadon: #51515e;  /* Dark periwinkle/grey — highlight / positive CTA */
 
   /* Neutrals */
   --color-ink: #111111;      
-  --color-ink-soft: #484b6a; 
-  --color-paper: #fafafa;    
+  --color-ink-soft: #616169; 
+  --color-paper: #dfd4cb;    
   --color-paper-2: #ffffff;  
-  --color-line: #d2d3db;     
-  --color-line-strong: #9394a5;
+  --color-line: #9ea1a7;     
+  --color-line-strong: #616169;
 }
 
 :root {
