@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Purple Teal */
-  --color-indigo: #378d94;   /* Dark Teal — primary dark */
-  --color-tekhelet: #6a408d; /* Dark purple — primary */
-  --color-glaucous: #9671bd; /* Medium purple — secondary / info */
-  --color-teal: #d1cbe5;     /* Light purple — soft accent */
-  --color-celadon: #77b5b6;  /* Teal — highlight / positive CTA */
+  /* Brand palette — Light Purple & Teal */
+  --color-indigo: #9671bd;   /* Medium purple — primary dark */
+  --color-tekhelet: #DAB1DA; /* Light purple — primary */
+  --color-glaucous: #D8BFD8; /* Thistle — secondary / info */
+  --color-teal: #77b5b6;     /* Teal — soft accent */
+  --color-celadon: #378d94;  /* Dark Teal — highlight / positive CTA */
 
   /* Neutrals */
   --color-ink: #111111;      
   --color-ink-soft: #5b5d66; 
   --color-paper: #fafafa;    
   --color-paper-2: #ffffff;  
-  --color-line: #e3e4e6;     
-  --color-line-strong: #9671bd;
+  --color-line: #d1cbe5;     /* Soft pastel purple for subtle lines */
+  --color-line-strong: #D8BFD8; /* Thistle for stronger borders */
 }
 
 :root {
