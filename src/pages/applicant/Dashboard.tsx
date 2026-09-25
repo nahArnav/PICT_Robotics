@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { NavLink, Outlet, Navigate, useNavigate } from 'react-router';
 import { LayoutGrid, FileText, ListChecks, CalendarClock, Megaphone, Trophy, LogOut } from 'lucide-react';
 import { Logo } from '../../components/Logo';
@@ -18,10 +19,10 @@ export function DashboardLayout() {
   const auth = useAuthState();
   const nav_ = useNavigate();
   
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     nav_('/signin', { replace: true });
-  };
+  }, [nav_]);
 
   useInactivityLogout(15 * 60 * 1000, signOut); // 15 minutes timeout
 
