@@ -7,7 +7,7 @@ import { recruitStages, contacts } from '../lib/data';
 const loadDrone = () => import('../components/three/Drone').then((m) => ({ default: m.Drone }));
 
 const faqs = [
-  ['Who can apply?', 'First-year (FY) and second-year (SY) students of PICT across all branches. No prior robotics experience is required for FY.'],
+  ['Who can apply?', 'First-year (FY) students of PICT across all branches. No prior robotics experience is required.'],
   ['Do I need my own hardware?', 'No. The club provides lab access, components and mentorship. The task round can be completed with free simulation tools.'],
   ['How much time does it take?', 'Expect 4–6 hours per week during recruitment. Members typically commit more during competition season.'],
   ['Can I apply to multiple domains?', 'Yes — you choose a primary and a secondary domain preference in your application.'],
@@ -105,7 +105,7 @@ export function Recruitment() {
             <div>
               <h3 className="font-display text-xl font-bold">Eligibility</h3>
               <ul className="mt-3 space-y-2 text-sm text-ink-soft">
-                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#2f9e63]" /> Enrolled FY or SY student at PICT.</li>
+                <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#2f9e63]" /> Enrolled FY student at PICT.</li>
                 <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#2f9e63]" /> Valid PICT email for verification.</li>
                 <li className="flex gap-2"><Check size={16} className="mt-0.5 shrink-0 text-[#2f9e63]" /> Genuine interest in building — any branch welcome.</li>
               </ul>

@@ -192,25 +192,23 @@ export function Home() {
                 THINK.<br />BUILD.<br /><span className="text-tekhelet">BREAK.</span><br /><span className="text-glaucous">IMPROVE.</span>
               </h2>
               <p className="mt-6 max-w-md text-ink-soft">
-                Recruitment for FY &amp; SY students is now open. Learn, explore and build with a team that ships real engineering.
+                Recruitment for first-year students is now open. Learn, explore and build with a team that ships real engineering.
               </p>
             </div>
             <div className="space-y-4">
-              {(['FY', 'SY'] as const).map((yr) => (
-                <Link key={yr} to="/recruitment" className="group flex items-center justify-between rounded-2xl border border-line bg-paper p-6 transition-all hover:border-tekhelet hover:shadow-[0_16px_40px_-20px_rgba(54,5,104,0.3)]">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-display text-xl font-bold">{yr} Recruitment</h3>
-                      <StatusChip tone="open">Applications Open</StatusChip>
-                    </div>
-                    <p className="mt-1.5 text-sm text-ink-soft">
-                      {yr === 'FY' ? 'For first-year students. Learn and build foundations.' : 'For second-year students. Go deeper into club projects.'}
-                    </p>
-                    <p className="label mt-3 text-[10px] text-glaucous">Deadline · 24 Sep 2026</p>
+              <Link to="/recruitment" className="group flex items-center justify-between rounded-2xl border border-line bg-paper p-6 transition-all hover:border-tekhelet hover:shadow-[0_16px_40px_-20px_rgba(54,5,104,0.3)]">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-display text-xl font-bold">FY Recruitment</h3>
+                    <StatusChip tone="open">Applications Open</StatusChip>
                   </div>
-                  <ArrowUpRight className="text-tekhelet transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                </Link>
-              ))}
+                  <p className="mt-1.5 text-sm text-ink-soft">
+                    For first-year students. Learn and build foundations.
+                  </p>
+                  <p className="label mt-3 text-[10px] text-glaucous">Deadline · 24 Sep 2026</p>
+                </div>
+                <ArrowUpRight className="text-tekhelet transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+              </Link>
             </div>
           </div>
         </div>
