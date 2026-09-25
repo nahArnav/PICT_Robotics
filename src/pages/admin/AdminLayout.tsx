@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { NavLink, Outlet, Navigate, useNavigate } from 'react-router';
 import { LayoutGrid, Users, GitBranch, ListChecks, CalendarClock, ClipboardCheck, Megaphone, FileEdit, BarChart3, Settings, Search, Bell, ChevronDown, LogOut, Mail, CalendarDays } from 'lucide-react';
 import { Logo } from '../../components/Logo';
-import { getCurrentRole, supabase } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
+import { isAdminRole, useAuthState } from '../../lib/auth';
 
 const nav = [
   { to: '/admin', label: 'Overview', icon: LayoutGrid, end: true },
@@ -21,14 +21,16 @@ const nav = [
 
 export function AdminLayout() {
   const nav_ = useNavigate();
-  const [admin, setAdmin] = useState<{ name: string; role: string; initials: string } | null | undefined>(undefined);
-  useEffect(() => { Promise.all([supabase.auth.getUser(), getCurrentRole()]).then(([{ data }, role]) => {
-    if (!role || role === 'applicant') return setAdmin(null);
-    const name = data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'Admin';
-    setAdmin({ name, role: role.replace('_', ' '), initials: name.split(' ').map((part: string) => part[0]).join('') });
-  }).catch(() => setAdmin(null)); }, []);
-  if (admin === undefined) return null;
-  if (!admin) return <Navigate to="/admin/login" replace />;
+  const auth = useAuthState();
+  if (!auth.ready) return null;
+  const role = auth.role;
+  if (!role || !isAdminRole(role) || !auth.user) return <Navigate to="/admin/login" replace />;
+  const name = auth.user.user_metadata?.full_name || auth.user.email?.split('@')[0] || 'Admin';
+  const admin = {
+    name,
+    role: role.replace('_', ' '),
+    initials: name.split(' ').map((part: string) => part[0]).join(''),
+  };
 
   const signOut = async () => { await supabase.auth.signOut(); nav_('/admin/login', { replace: true }); };
 

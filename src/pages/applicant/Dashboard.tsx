@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
 import { NavLink, Outlet, Navigate } from 'react-router';
 import { LayoutGrid, FileText, ListChecks, CalendarClock, Megaphone, Trophy } from 'lucide-react';
 import { Logo } from '../../components/Logo';
 import { StatusChip } from '../../components/ui';
-import { supabase } from '../../lib/supabase';
+import { useAuthState } from '../../lib/auth';
 
 const nav = [
   { to: '/dashboard', label: 'Overview', icon: LayoutGrid, end: true },
@@ -15,10 +14,9 @@ const nav = [
 ];
 
 export function DashboardLayout() {
-  const [authenticated, setAuthenticated] = useState<boolean | undefined>(undefined);
-  useEffect(() => { supabase.auth.getSession().then(({ data }) => setAuthenticated(Boolean(data.session))); }, []);
-  if (authenticated === undefined) return null;
-  if (!authenticated) return <Navigate to="/signin" replace />;
+  const auth = useAuthState();
+  if (!auth.ready) return null;
+  if (!auth.session || auth.role !== 'applicant') return <Navigate to="/signin" replace />;
   return (
     <div className="min-h-screen bg-paper lg:grid lg:grid-cols-[248px_1fr]">
       {/* Sidebar */}

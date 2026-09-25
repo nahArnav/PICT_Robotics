@@ -1,17 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import type { AppRole, Database } from './database';
 
-const browser = globalThis as typeof globalThis & { __pictSupabaseClient?: ReturnType<typeof createClient> };
+const browser = globalThis as typeof globalThis & { __pictSupabaseClient?: ReturnType<typeof createClient<Database>> };
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || `https://${projectId}.supabase.co`;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || publicAnonKey;
 
 // Keep one auth client across Vite hot reloads and route chunks.
-export const supabase = browser.__pictSupabaseClient ?? createClient(`https://${projectId}.supabase.co`, publicAnonKey, {
+export const supabase = browser.__pictSupabaseClient ?? createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
 });
 browser.__pictSupabaseClient = supabase;
 
 export const serverUrl = `https://${projectId}.supabase.co/functions/v1/make-server-3b5b87c7`;
 
-export type AppRole = 'applicant' | 'recruiter' | 'admin' | 'super_admin';
+export type { AppRole } from './database';
 
 export async function getCurrentRole(): Promise<AppRole | null> {
   const { data: { user } } = await supabase.auth.getUser();

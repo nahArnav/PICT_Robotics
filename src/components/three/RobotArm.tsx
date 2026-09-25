@@ -289,7 +289,7 @@ export function RobotArm({ className = '' }: { className?: string }) {
       renderer.render(scene, camera);
       if (!reduce) raf = requestAnimationFrame(frame);
     };
-    frame();
+    frame(performance.now());
     if (reduce) { held = true; renderer.render(scene, camera); }
 
     return () => {

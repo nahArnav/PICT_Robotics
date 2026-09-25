@@ -115,7 +115,7 @@ export function Drone({ className = '' }: { className?: string }) {
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
     };
-    animate();
+    animate(performance.now());
 
     return () => {
       cancelAnimationFrame(raf);

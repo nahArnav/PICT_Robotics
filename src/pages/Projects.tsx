@@ -1,15 +1,61 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ArrowLeft, ArrowRight, Search } from 'lucide-react';
 import { Button, Card, Kicker, Section, inputCls } from '../components/ui';
-import { projects } from '../lib/data';
+import { projects as staticProjects, type Project as StaticProject } from '../lib/data';
+import { getPublishedProjects, type Project as DbProject } from '../lib/services/projects';
 
 const filters = ['All', 'Autonomous', 'Embedded', 'Vision', 'Mechanical', 'Software'];
+
+type DisplayProject = {
+  slug: string;
+  name: string;
+  category: string;
+  year: number;
+  tags: string[];
+  summary: string;
+  image: string;
+  repository_url?: string | null;
+  demo_url?: string | null;
+};
+
+function dbToDisplay(p: DbProject): DisplayProject {
+  return {
+    slug: p.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+    name: p.title,
+    category: p.category ?? 'General',
+    year: p.year,
+    tags: [],
+    summary: p.description,
+    image: p.image_url ?? 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=900&h=650&fit=crop&auto=format',
+    repository_url: p.repository_url,
+    demo_url: p.demo_url,
+  };
+}
+
+function staticToDisplay(p: StaticProject): DisplayProject {
+  return { ...p, name: p.name, summary: p.summary };
+}
 
 export function Projects() {
   const [active, setActive] = useState('All');
   const [q, setQ] = useState('');
-  const list = projects.filter(
+  const [items, setItems] = useState<DisplayProject[]>(staticProjects.map(staticToDisplay));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active_ = true;
+    getPublishedProjects()
+      .then((dbItems) => {
+        if (!active_) return;
+        if (dbItems.length > 0) setItems(dbItems.map(dbToDisplay));
+      })
+      .catch(() => {})
+      .finally(() => { if (active_) setLoading(false); });
+    return () => { active_ = false; };
+  }, []);
+
+  const list = items.filter(
     (p) => (active === 'All' || p.category === active) && p.name.toLowerCase().includes(q.toLowerCase()),
   );
 
@@ -37,6 +83,8 @@ export function Projects() {
           </div>
         </div>
 
+        {loading && <p className="text-ink-soft">Loading projects…</p>}
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => (
             <Link key={p.slug} to={`/projects/${p.slug}`} className="group">
@@ -59,7 +107,7 @@ export function Projects() {
             </Link>
           ))}
         </div>
-        {list.length === 0 && <EmptyState />}
+        {!loading && list.length === 0 && <EmptyState />}
       </Section>
     </>
   );
@@ -67,7 +115,7 @@ export function Projects() {
 
 export function ProjectDetail() {
   const { slug } = useParams();
-  const p = projects.find((x) => x.slug === slug) ?? projects[0];
+  const p = staticProjects.find((x) => x.slug === slug) ?? staticProjects[0];
   const sections = [
     ['Overview', `${p.name} is a ${p.category.toLowerCase()} project developed by the PICT Robotics Club. It was designed, prototyped and validated end-to-end by a student team over a single academic cycle.`],
     ['Problem', 'Existing solutions were either too costly or not robust enough for real deployment. The team scoped a system that balances performance, cost and manufacturability.'],
@@ -110,7 +158,7 @@ export function ProjectDetail() {
           <div>
             <h2 className="mb-4 font-display text-xl font-bold">Gallery</h2>
             <div className="grid grid-cols-2 gap-3">
-              {[p.image, projects[(projects.indexOf(p) + 1) % projects.length].image].map((img, i) => (
+              {[p.image, staticProjects[(staticProjects.indexOf(p) + 1) % staticProjects.length].image].map((img, i) => (
                 <img key={i} src={img} alt="" className="aspect-video w-full rounded-xl border border-line object-cover" />
               ))}
             </div>

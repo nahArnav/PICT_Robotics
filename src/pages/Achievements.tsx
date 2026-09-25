@@ -1,15 +1,62 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trophy, Award, Medal } from 'lucide-react';
 import { Card, Section, Kicker } from '../components/ui';
 import { Lazy3D } from '../components/widgets';
-import { achievements } from '../lib/data';
+import { achievements as staticAchievements } from '../lib/data';
+import { getPublishedAchievements, type Achievement as DbAchievement } from '../lib/services/achievements';
 
-const years = ['All', '2026', '2025', '2024'];
+const years = ['All', '2026', '2025', '2024', '2023', '2022'];
 const loadDrone = () => import('../components/three/Drone').then((m) => ({ default: m.Drone }));
+
+type DisplayAchievement = {
+  competition: string;
+  year: number;
+  position: string;
+  rank: string;
+  project: string;
+  team: string;
+  description: string;
+  major?: boolean;
+  image: string;
+};
+
+function dbToDisplay(a: DbAchievement): DisplayAchievement {
+  return {
+    competition: a.title,
+    year: a.year,
+    position: a.description,
+    rank: a.category ?? '',
+    project: a.title,
+    team: 'PICT Robotics Club',
+    description: a.description,
+    major: a.featured,
+    image: a.image_url ?? 'https://images.unsplash.com/photo-1517976487492-5750f3195933?w=1200&h=800&fit=crop&auto=format',
+  };
+}
 
 export function Achievements() {
   const [year, setYear] = useState('All');
-  const list = achievements.filter((a) => year === 'All' || String(a.year) === year);
+  const [items, setItems] = useState<DisplayAchievement[]>(staticAchievements);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    getPublishedAchievements()
+      .then((dbItems) => {
+        if (!active) return;
+        if (dbItems.length > 0) {
+          setItems(dbItems.map(dbToDisplay));
+        }
+        // If DB is empty, keep static data as fallback
+      })
+      .catch(() => {
+        // Keep static data on error
+      })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  const list = items.filter((a) => year === 'All' || String(a.year) === year);
   const major = list.filter((a) => a.major).sort((a, b) => {
     if (a.rank === 'AIR 1') return -1;
     if (b.rank === 'AIR 1') return 1;
@@ -45,6 +92,8 @@ export function Achievements() {
             </button>
           ))}
         </div>
+
+        {loading && <p className="text-ink-soft">Loading achievements…</p>}
 
         {/* Major achievements — large spotlight cards */}
         {major.length > 0 && (
@@ -93,6 +142,13 @@ export function Achievements() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {!loading && list.length === 0 && (
+          <div className="grid place-items-center rounded-2xl border border-dashed border-line-strong py-20 text-center">
+            <p className="font-display text-lg font-semibold">No achievements found</p>
+            <p className="mt-1 text-sm text-ink-soft">Try a different year filter.</p>
           </div>
         )}
       </Section>

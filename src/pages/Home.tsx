@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { ArrowRight, ArrowUpRight, Cpu, Eye, CircuitBoard, Cog, Wrench, Code2, Trophy, Bot } from 'lucide-react';
 import { Button, Card, Kicker, Section, StatusChip, Corners } from '../components/ui';
 import { Reveal, CountUp, Lazy3D, Gauge, Terminal } from '../components/widgets';
 import { metrics, domains, achievements } from '../lib/data';
-
+import { getPublishedAchievements } from '../lib/services/achievements';
 const loadScene = () => import('../components/RoboticsScene').then((m) => ({ default: m.RoboticsScene }));
 const loadArm = () => import('../components/three/RobotArm').then((m) => ({ default: m.RobotArm }));
 const loadDrone = () => import('../components/three/Drone').then((m) => ({ default: m.Drone }));
@@ -11,7 +12,29 @@ const loadDrone = () => import('../components/three/Drone').then((m) => ({ defau
 const domainIcons = [Bot, CircuitBoard, Eye, Cpu, Wrench, Cog, Code2, Trophy];
 
 export function Home() {
-  const spotlight = achievements[2]; // AIR 1 ISRO 2025
+  const [spotlight, setSpotlight] = useState<any>(achievements[2]); // Fallback to AIR 1 ISRO 2025
+
+  useEffect(() => {
+    let active = true;
+    getPublishedAchievements()
+      .then((items) => {
+        if (!active) return;
+        const feat = items.find((a) => a.featured);
+        if (feat) {
+          setSpotlight({
+            competition: feat.title,
+            year: feat.year,
+            position: feat.description,
+            rank: feat.category ?? '01',
+            project: feat.title,
+            team: 'PICT Robotics Club',
+            description: feat.description,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   return (
     <>
@@ -145,9 +168,11 @@ export function Home() {
             <div className="p-8 md:p-14">
               <Kicker className="!text-teal">Competitive record · {spotlight.competition}</Kicker>
               <div className="mt-6 flex items-end gap-4">
-                <span className="font-display text-[7rem] font-extrabold leading-[0.8] text-celadon">01</span>
-                <span className="mb-4 font-display text-2xl font-bold text-white/90">
-                  ALL INDIA<br />RANK
+                <span className="font-display text-[7rem] font-extrabold leading-[0.8] text-celadon">
+                  {String(spotlight.rank).replace(/[^0-9]/g, '').padStart(2, '0') || '01'}
+                </span>
+                <span className="mb-4 font-display text-2xl font-bold text-white/90 whitespace-pre-line">
+                  {String(spotlight.rank).replace(/[0-9]/g, '').trim() || 'ALL INDIA\nRANK'}
                 </span>
               </div>
               <h3 className="mt-6 font-display text-2xl font-bold">{spotlight.project}</h3>

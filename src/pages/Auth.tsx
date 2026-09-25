@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button, Field, inputCls } from '../components/ui';
 import { Logo, SchematicVisual } from '../components/Logo';
-import { supabase } from '../lib/supabase';
+import { getCurrentRole, supabase } from '../lib/supabase';
+import { authErrorMessage, isAdminRole } from '../lib/auth';
 
 export function Auth({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const nav = useNavigate();
@@ -49,15 +50,28 @@ export function Auth({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                   setBusy(true); setError('');
                   try {
                     if (isSignup) {
-                      const { data, error: signUpError } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/signin` } });
+                      const { error: signUpError } = await supabase.auth.signUp({
+                        email: email.trim().toLowerCase(),
+                        password,
+                        options: { data: { full_name: fullName.trim() }, emailRedirectTo: `${window.location.origin}/signin` },
+                      });
                       if (signUpError) throw signUpError;
                       setStep('verify');
                     } else {
-                      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+                      const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
                       if (signInError) throw signInError;
+                      const role = await getCurrentRole();
+                      if (isAdminRole(role)) {
+                        await supabase.auth.signOut();
+                        throw new Error('This account is for the restricted admin console. Use the admin sign-in page.');
+                      }
+                      if (role !== 'applicant') {
+                        await supabase.auth.signOut();
+                        throw new Error('Your account is not ready yet. Please try again after verifying your email.');
+                      }
                       nav('/dashboard', { replace: true });
                     }
-                  } catch (err) { setError(err instanceof Error ? err.message : 'Unable to continue.'); }
+                  } catch (err) { setError(authErrorMessage(err, 'Unable to continue.')); }
                   finally { setBusy(false); }
                 }}
               >

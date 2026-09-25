@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Navigate, Link } from 'react-router';
 import { ArrowRight, ShieldCheck, Lock, AlertCircle } from 'lucide-react';
 import { Button, Field, inputCls } from '../../components/ui';
 import { Logo, SchematicVisual } from '../../components/Logo';
 import { getCurrentRole, supabase } from '../../lib/supabase';
+import { authErrorMessage, isAdminRole, useAuthState } from '../../lib/auth';
 
 export function AdminLogin() {
   const nav = useNavigate();
@@ -11,24 +12,24 @@ export function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
-
-  useEffect(() => { getCurrentRole().then((role) => setAuthenticated(role === 'recruiter' || role === 'admin' || role === 'super_admin')).catch(() => setAuthenticated(false)); }, []);
-  if (authenticated) return <Navigate to="/admin" replace />;
+  const auth = useAuthState();
+  if (auth.ready && isAdminRole(auth.role)) return <Navigate to="/admin" replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError('');
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
-    if (authError) setError(authError.message);
-    else {
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+      if (authError) throw authError;
       const role = await getCurrentRole();
-      if (role === 'recruiter' || role === 'admin' || role === 'super_admin') nav('/admin', { replace: true });
+      if (isAdminRole(role)) nav('/admin', { replace: true });
       else {
-      await supabase.auth.signOut();
-      setError('This account is not authorized for the admin console.');
+        await supabase.auth.signOut();
+        setError('This account is not authorized for the admin console.');
       }
+    } catch (err) {
+      setError(authErrorMessage(err, 'Unable to sign in right now.'));
     }
     setBusy(false);
   };
