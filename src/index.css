@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — lighter purple-teal tones */
-  --color-indigo: #6a408d;   /* Deep Purple — primary dark */
-  --color-tekhelet: #9671bd; /* Medium Purple — primary */
-  --color-glaucous: #77b5b6; /* Teal — secondary / info */
-  --color-teal: #d1cbe5;     /* Lavender Mist — soft accent */
-  --color-celadon: #378d94;  /* Deep Teal — highlight / positive CTA */
+  /* Brand palette — Slate Blue & Warm Gold tones */
+  --color-indigo: #1c2e4a;   /* Deep Slate Blue — primary dark */
+  --color-tekhelet: #345370; /* Slate Blue — primary */
+  --color-glaucous: #738c9e; /* Muted Steel Blue — secondary / info */
+  --color-teal: #e0e6ed;     /* Light Slate Grey — soft accent */
+  --color-celadon: #e6a323;  /* Warm Gold — highlight / positive CTA */
 
   /* Neutrals */
-  --color-ink: #2d1f3d;      /* dark purple-tinted charcoal */
-  --color-ink-soft: #5c4f6e;
-  --color-paper: #faf8fd;    /* warm lavender off-white */
-  --color-paper-2: #f0ecf5;  /* very light lavender */
-  --color-line: #e2dced;     /* muted lavender border */
-  --color-line-strong: #d1cbe5;
+  --color-ink: #0f172a;      /* slate-900 */
+  --color-ink-soft: #475569; /* slate-600 */
+  --color-paper: #f8fafc;    /* slate-50 */
+  --color-paper-2: #f1f5f9;  /* slate-100 */
+  --color-line: #e2e8f0;     /* slate-200 */
+  --color-line-strong: #cbd5e1; /* slate-300 */
 }
 
 :root {
