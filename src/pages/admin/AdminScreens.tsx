@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, GripVertical, Calendar, Clock, ArrowRight, Lock, Mail, Send } from 'lucide-react';
+import { Plus, GripVertical, Calendar, Clock, ArrowRight, Lock, Mail, Send, BarChart3 } from 'lucide-react';
 import { Card, Kicker, StatusChip, Button, inputCls, Field } from '../../components/ui';
 import { supabase } from '../../lib/supabase';
 import { useAuthState } from '../../lib/auth';
@@ -147,7 +147,7 @@ export function Pipeline() {
               <span className="label text-[10px] text-glaucous">Stage {i + 1}</span>
             </div>
             <p className="font-display font-semibold">{p.stage}</p>
-            <p className="mt-2 font-display text-3xl font-extrabold text-tekhelet">{p.count || '—'}</p>
+            <p className="mt-2 font-display text-3xl font-extrabold text-tekhelet">{p.count ?? 0}</p>
             <p className="mt-1 text-xs text-ink-soft">applicants</p>
           </Card>
         ))}
@@ -438,6 +438,18 @@ export function AdminContent() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [notice, setNotice] = useState('');
+  
+  // Forms
+  const [achTitle, setAchTitle] = useState('');
+  const [achYear, setAchYear] = useState(new Date().getFullYear());
+  const [achDesc, setAchDesc] = useState('');
+  const [achFeatured, setAchFeatured] = useState(false);
+
+  const [projTitle, setProjTitle] = useState('');
+  const [projYear, setProjYear] = useState(new Date().getFullYear());
+  const [projDesc, setProjDesc] = useState('');
+
+  const [busy, setBusy] = useState(false);
 
   const loadAll = () => {
     getAllAchievements().then(setAchievements).catch(() => {});
@@ -445,69 +457,112 @@ export function AdminContent() {
   };
   useEffect(loadAll, []);
 
+  const handleCreateAchievement = async (e: React.FormEvent) => {
+    e.preventDefault(); setNotice(''); setBusy(true);
+    try {
+      await createAchievement({ title: achTitle, year: Number(achYear), description: achDesc, featured: achFeatured, published: true });
+      setAchTitle(''); setAchDesc(''); setAchFeatured(false);
+      setNotice('Achievement created!');
+      loadAll();
+    } catch (err) { setNotice(err instanceof Error ? err.message : 'Error creating'); }
+    finally { setBusy(false); }
+  };
+
+  const handleCreateProject = async (e: React.FormEvent) => {
+    e.preventDefault(); setNotice(''); setBusy(true);
+    try {
+      await createProject({ title: projTitle, year: Number(projYear), description: projDesc, published: true });
+      setProjTitle(''); setProjDesc('');
+      setNotice('Project created!');
+      loadAll();
+    } catch (err) { setNotice(err instanceof Error ? err.message : 'Error creating'); }
+    finally { setBusy(false); }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><Kicker>Content</Kicker><h1 className="mt-1 font-display text-2xl font-bold">Website content</h1></div>
         <div className="flex gap-1 rounded-lg border border-line bg-white p-1">
           {(['achievements', 'projects'] as const).map((t) => (
-            <button key={t} onClick={() => setActiveTab(t)} className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize transition ${activeTab === t ? 'bg-indigo text-white' : 'text-ink-soft'}`}>{t}</button>
+            <button key={t} onClick={() => { setActiveTab(t); setNotice(''); }} className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize transition ${activeTab === t ? 'bg-indigo text-white' : 'text-ink-soft'}`}>{t}</button>
           ))}
         </div>
       </div>
 
-      {notice && <p className="text-sm text-ink-soft">{notice}</p>}
+      {notice && <p className="text-sm text-ink-soft bg-celadon/10 text-celadon p-2 rounded">{notice}</p>}
 
       {activeTab === 'achievements' && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {achievements.map((a) => (
-            <Card key={a.id} hover className="p-5">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-semibold">{a.title}</h3>
-                <span className="font-display text-xl font-extrabold text-tekhelet">{a.year}</span>
-              </div>
-              <p className="mt-1 line-clamp-2 text-xs text-ink-soft">{a.description}</p>
-              <div className="mt-3 flex gap-2">
-                <StatusChip tone={a.published ? 'done' : 'neutral'} dot={false}>{a.published ? 'Published' : 'Draft'}</StatusChip>
-                {a.featured && <StatusChip tone="info" dot={false}>Featured</StatusChip>}
-              </div>
-              <div className="mt-4 flex gap-2 text-sm">
-                <button onClick={async () => { await updateAchievement(a.id, { published: !a.published }); loadAll(); }} className="rounded-lg border border-line px-3 py-1.5 font-medium hover:border-tekhelet hover:text-tekhelet">
-                  {a.published ? 'Unpublish' : 'Publish'}
-                </button>
-                <button onClick={async () => { if (window.confirm('Delete?')) { await deleteAchievement(a.id); loadAll(); } }} className="rounded-lg border border-line px-3 py-1.5 font-medium text-[#a13939] hover:border-[#a13939]">Delete</button>
-              </div>
-            </Card>
-          ))}
-          {achievements.length === 0 && <p className="text-sm text-ink-soft">No achievements. Create one to get started.</p>}
+        <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+          <Card className="h-fit p-6">
+            <h3 className="mb-4 font-display font-semibold">New Achievement</h3>
+            <form onSubmit={handleCreateAchievement} className="space-y-4">
+              <Field label="Title" required><input required value={achTitle} onChange={(e) => setAchTitle(e.target.value)} className={inputCls} placeholder="e.g. AIR 1 Robocon" /></Field>
+              <Field label="Year" required><input type="number" required value={achYear} onChange={(e) => setAchYear(Number(e.target.value))} className={inputCls} /></Field>
+              <Field label="Description" required><textarea required value={achDesc} onChange={(e) => setAchDesc(e.target.value)} rows={3} className={inputCls} placeholder="Short description" /></Field>
+              <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={achFeatured} onChange={(e) => setAchFeatured(e.target.checked)} /> Featured on homepage</label>
+              <Button variant="cta" className="w-full" disabled={busy}>{busy ? 'Saving...' : 'Create Achievement'}</Button>
+            </form>
+          </Card>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {achievements.map((a) => (
+              <Card key={a.id} hover className="p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display font-semibold">{a.title}</h3>
+                  <span className="font-display text-xl font-extrabold text-tekhelet">{a.year}</span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs text-ink-soft">{a.description}</p>
+                <div className="mt-3 flex gap-2">
+                  <StatusChip tone={a.published ? 'done' : 'neutral'} dot={false}>{a.published ? 'Published' : 'Draft'}</StatusChip>
+                  {a.featured && <StatusChip tone="info" dot={false}>Featured</StatusChip>}
+                </div>
+                <div className="mt-4 flex gap-2 text-sm">
+                  <button onClick={async () => { await updateAchievement(a.id, { published: !a.published }); loadAll(); }} className="rounded-lg border border-line px-3 py-1.5 font-medium hover:border-tekhelet hover:text-tekhelet">
+                    {a.published ? 'Unpublish' : 'Publish'}
+                  </button>
+                  <button onClick={async () => { if (window.confirm('Delete?')) { await deleteAchievement(a.id); loadAll(); } }} className="rounded-lg border border-line px-3 py-1.5 font-medium text-[#a13939] hover:border-[#a13939]">Delete</button>
+                </div>
+              </Card>
+            ))}
+            {achievements.length === 0 && <p className="text-sm text-ink-soft col-span-2">No achievements yet.</p>}
+          </div>
         </div>
       )}
 
       {activeTab === 'projects' && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((p) => (
-            <Card key={p.id} hover className="p-5">
-              <div className="flex items-center justify-between">
-                <h3 className="font-display font-semibold">{p.title}</h3>
-                <span className="font-display text-xl font-extrabold text-tekhelet">{p.year}</span>
-              </div>
-              <p className="mt-1 line-clamp-2 text-xs text-ink-soft">{p.description}</p>
-              <div className="mt-3 flex gap-2">
-                <StatusChip tone={p.published ? 'done' : 'neutral'} dot={false}>{p.published ? 'Published' : 'Draft'}</StatusChip>
-              </div>
-              <div className="mt-4 flex gap-2 text-sm">
-                <button onClick={async () => { await updateProject(p.id, { published: !p.published }); loadAll(); }} className="rounded-lg border border-line px-3 py-1.5 font-medium hover:border-tekhelet hover:text-tekhelet">
-                  {p.published ? 'Unpublish' : 'Publish'}
-                </button>
-                <button onClick={async () => { if (window.confirm('Delete?')) { await deleteProject(p.id); loadAll(); } }} className="rounded-lg border border-line px-3 py-1.5 font-medium text-[#a13939] hover:border-[#a13939]">Delete</button>
-              </div>
-            </Card>
-          ))}
-          {projects.length === 0 && <p className="text-sm text-ink-soft">No projects. Create one to get started.</p>}
+        <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+          <Card className="h-fit p-6">
+            <h3 className="mb-4 font-display font-semibold">New Project</h3>
+            <form onSubmit={handleCreateProject} className="space-y-4">
+              <Field label="Project Name" required><input required value={projTitle} onChange={(e) => setProjTitle(e.target.value)} className={inputCls} placeholder="e.g. Autonomous Drone" /></Field>
+              <Field label="Year" required><input type="number" required value={projYear} onChange={(e) => setProjYear(Number(e.target.value))} className={inputCls} /></Field>
+              <Field label="Description" required><textarea required value={projDesc} onChange={(e) => setProjDesc(e.target.value)} rows={3} className={inputCls} placeholder="Short description" /></Field>
+              <Button variant="cta" className="w-full" disabled={busy}>{busy ? 'Saving...' : 'Create Project'}</Button>
+            </form>
+          </Card>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {projects.map((p) => (
+              <Card key={p.id} hover className="p-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display font-semibold">{p.title}</h3>
+                  <span className="font-display text-xl font-extrabold text-tekhelet">{p.year}</span>
+                </div>
+                <p className="mt-1 line-clamp-2 text-xs text-ink-soft">{p.description}</p>
+                <div className="mt-3 flex gap-2">
+                  <StatusChip tone={p.published ? 'done' : 'neutral'} dot={false}>{p.published ? 'Published' : 'Draft'}</StatusChip>
+                </div>
+                <div className="mt-4 flex gap-2 text-sm">
+                  <button onClick={async () => { await updateProject(p.id, { published: !p.published }); loadAll(); }} className="rounded-lg border border-line px-3 py-1.5 font-medium hover:border-tekhelet hover:text-tekhelet">
+                    {p.published ? 'Unpublish' : 'Publish'}
+                  </button>
+                  <button onClick={async () => { if (window.confirm('Delete?')) { await deleteProject(p.id); loadAll(); } }} className="rounded-lg border border-line px-3 py-1.5 font-medium text-[#a13939] hover:border-[#a13939]">Delete</button>
+                </div>
+              </Card>
+            ))}
+            {projects.length === 0 && <p className="text-sm text-ink-soft col-span-2">No projects yet.</p>}
+          </div>
         </div>
       )}
-
-      <p className="text-sm text-ink-soft">The public website content can be maintained here without editing code.</p>
     </div>
   );
 }
@@ -521,6 +576,81 @@ export function AdminStub({ title }: { title: string }) {
         <h1 className="font-display text-xl font-bold">{title}</h1>
         <p className="mt-1 max-w-sm text-sm text-ink-soft">This module is part of the platform system and shares the same design language as the screens built out here.</p>
       </div>
+    </div>
+  );
+}
+
+/* ─── Task Management ─────────────────────────────────────────────────── */
+export function AdminTasks() {
+  const [tasks, setTasks] = useState([
+    { id: 1, title: 'Review Applicant Resumes', status: 'In Progress', assignee: 'Arnav', due: 'Today' },
+    { id: 2, title: 'Finalize Interview Panel', status: 'Todo', assignee: 'Unassigned', due: 'Tomorrow' },
+    { id: 3, title: 'Prepare FY Workshop Material', status: 'Done', assignee: 'Team', due: 'Yesterday' }
+  ]);
+  const [newTask, setNewTask] = useState('');
+
+  const addTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTask.trim()) return;
+    setTasks([{ id: Date.now(), title: newTask, status: 'Todo', assignee: 'Unassigned', due: 'Upcoming' }, ...tasks]);
+    setNewTask('');
+  };
+
+  return (
+    <div className="space-y-6">
+      <div><Kicker>Operations</Kicker><h1 className="mt-1 font-display text-2xl font-bold">Tasks</h1></div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
+        <Card className="h-fit p-6">
+          <h3 className="mb-4 font-display font-semibold">New Task</h3>
+          <form onSubmit={addTask} className="space-y-4">
+            <Field label="Task Title" required><input required value={newTask} onChange={(e) => setNewTask(e.target.value)} className={inputCls} placeholder="e.g. Call candidates" /></Field>
+            <Button variant="cta" className="w-full">Add Task</Button>
+          </form>
+        </Card>
+        <div className="space-y-3">
+          {tasks.map(t => (
+            <Card key={t.id} className="p-4 flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">{t.title}</h4>
+                <p className="text-xs text-ink-soft mt-1">Assignee: {t.assignee} · Due: {t.due}</p>
+              </div>
+              <StatusChip tone={t.status === 'Done' ? 'done' : t.status === 'In Progress' ? 'progress' : 'neutral'} dot={false}>{t.status}</StatusChip>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Analytics ───────────────────────────────────────────────────────── */
+export function AdminAnalytics() {
+  return (
+    <div className="space-y-6">
+      <div><Kicker>Overview</Kicker><h1 className="mt-1 font-display text-2xl font-bold">Analytics</h1></div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card className="p-5">
+          <p className="text-sm font-medium text-ink-soft">Total Page Views</p>
+          <p className="font-display text-3xl font-extrabold text-tekhelet mt-2">12,492</p>
+          <p className="text-xs text-celadon mt-1">+14% from last week</p>
+        </Card>
+        <Card className="p-5">
+          <p className="text-sm font-medium text-ink-soft">Active Applicants</p>
+          <p className="font-display text-3xl font-extrabold text-tekhelet mt-2">243</p>
+          <p className="text-xs text-celadon mt-1">+5% from last week</p>
+        </Card>
+        <Card className="p-5">
+          <p className="text-sm font-medium text-ink-soft">Workshop Registrations</p>
+          <p className="font-display text-3xl font-extrabold text-tekhelet mt-2">89</p>
+          <p className="text-xs text-ink-soft mt-1">Capacity: 120</p>
+        </Card>
+      </div>
+      <Card className="p-6 min-h-[300px] flex items-center justify-center border-dashed">
+        <div className="text-center">
+          <BarChart3 size={32} className="mx-auto mb-3 text-line-strong" />
+          <p className="font-medium text-ink-soft">Detailed charts are generating...</p>
+        </div>
+      </Card>
     </div>
   );
 }

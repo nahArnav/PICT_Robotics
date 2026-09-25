@@ -16,7 +16,7 @@ import { AdminInvites } from './pages/admin/AdminInvites';
 import { AdminOverview } from './pages/admin/Overview';
 import { Applicants } from './pages/admin/Applicants';
 import { AdminEvents } from './pages/admin/Events';
-import { Pipeline, Interviews, Evaluation, AdminAnnouncements, AdminContent, AdminMail, AdminStub } from './pages/admin/AdminScreens';
+import { Pipeline, Interviews, Evaluation, AdminAnnouncements, AdminContent, AdminMail, AdminStub, AdminTasks, AdminAnalytics } from './pages/admin/AdminScreens';
 
 export const router = createBrowserRouter([
   {
@@ -62,8 +62,8 @@ export const router = createBrowserRouter([
       { path: 'events', Component: AdminEvents },
       { path: 'mail', Component: AdminMail },
       { path: 'content', Component: AdminContent },
-      { path: 'tasks', Component: () => <AdminStub title="Task Management" /> },
-      { path: 'analytics', Component: () => <AdminStub title="Analytics" /> },
+      { path: 'tasks', Component: AdminTasks },
+      { path: 'analytics', Component: AdminAnalytics },
       { path: 'settings', Component: AdminInvites },
     ],
   },
