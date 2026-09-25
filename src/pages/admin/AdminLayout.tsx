@@ -71,16 +71,63 @@ export function AdminLayout() {
             <input placeholder="Search applicants, tasks..." className="w-full rounded-lg border border-line bg-paper py-2 pl-9 pr-3 text-sm focus:border-tekhelet focus:outline-none" />
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <button className="flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-sm font-medium">
-              FY Recruitment 2026 <ChevronDown size={14} className="text-ink-soft" />
-            </button>
-            <button className="relative grid h-9 w-9 place-items-center rounded-lg border border-line bg-white text-ink-soft">
-              <Bell size={16} /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-celadon ring-2 ring-white" />
-            </button>
+            <div className="relative group">
+              <button className="flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-sm font-medium transition hover:border-line-strong hover:bg-paper">
+                FY Recruitment 2026 <ChevronDown size={14} className="text-ink-soft" />
+              </button>
+              <div className="absolute right-0 top-full mt-2 hidden w-48 flex-col rounded-xl border border-line bg-white p-2 shadow-lg group-focus-within:flex group-hover:flex">
+                <span className="mb-1 px-3 py-1 text-[10px] font-bold uppercase text-ink-soft">Active Campaign</span>
+                <button className="flex w-full items-center justify-between rounded-md bg-paper px-3 py-2 text-sm font-medium text-tekhelet">
+                  FY Recruitment 2026
+                  <span className="h-1.5 w-1.5 rounded-full bg-celadon"></span>
+                </button>
+                <button className="mt-1 flex w-full items-center rounded-md px-3 py-2 text-sm text-ink-soft hover:bg-paper">
+                  SY Recruitment 2026
+                </button>
+              </div>
+            </div>
+
+            <div className="relative group">
+              <button className="relative grid h-9 w-9 place-items-center rounded-lg border border-line bg-white text-ink-soft transition hover:border-line-strong hover:text-ink">
+                <Bell size={16} /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-celadon ring-2 ring-white" />
+              </button>
+              <div className="absolute right-0 top-full mt-2 hidden w-64 flex-col rounded-xl border border-line bg-white p-3 shadow-lg group-focus-within:flex group-hover:flex">
+                <div className="mb-2 flex items-center justify-between px-2">
+                  <span className="font-semibold">Notifications</span>
+                  <button className="text-xs text-tekhelet hover:underline">Mark read</button>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="rounded-lg bg-paper-2 p-3 text-sm">
+                    <p className="font-medium">New Applicant</p>
+                    <p className="text-xs text-ink-soft">Arnav submitted an application</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative group hidden lg:block">
+              <button className="grid h-9 w-9 place-items-center rounded-full bg-tekhelet font-display text-sm font-bold text-white transition hover:ring-2 hover:ring-tekhelet/30 hover:ring-offset-2">
+                {admin.initials}
+              </button>
+              <div className="absolute right-0 top-full mt-2 hidden w-48 flex-col rounded-xl border border-line bg-white p-2 shadow-lg group-focus-within:flex group-hover:flex">
+                <div className="border-b border-line px-3 pb-2 pt-1">
+                  <p className="font-medium text-ink truncate">{admin.name}</p>
+                  <p className="text-xs text-ink-soft capitalize">{admin.role}</p>
+                </div>
+                <div className="mt-2 flex flex-col gap-1">
+                  <NavLink to="/admin/settings" className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-paper-2 text-ink">
+                    <Settings size={14} className="text-ink-soft" /> Settings
+                  </NavLink>
+                  <button onClick={signOut} className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[#a13939] hover:bg-paper-2">
+                    <LogOut size={14} /> Sign out
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <button onClick={signOut} title="Sign out" className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-white text-ink-soft transition hover:border-tekhelet hover:text-tekhelet lg:hidden">
               <LogOut size={16} />
             </button>
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-tekhelet font-display text-sm font-bold text-white">{admin.initials}</div>
           </div>
         </header>
 

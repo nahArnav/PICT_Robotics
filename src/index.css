@@ -9,8 +9,8 @@
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Brand palette */
-  --color-indigo: #360568;   /* Persian Indigo — primary dark */
-  --color-tekhelet: #5b2a86; /* Tekhelet — primary */
+  --color-indigo: #511b8a;   /* Lighter Persian Indigo — primary dark */
+  --color-tekhelet: #7c40ab; /* Lighter Tekhelet — primary */
   --color-glaucous: #7785ac; /* Glaucous — secondary / info */
   --color-teal: #9ac6c5;     /* Light Teal — soft accent */
   --color-celadon: #a5e6ba;  /* Celadon — highlight / positive CTA */

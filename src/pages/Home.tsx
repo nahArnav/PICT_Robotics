@@ -5,6 +5,7 @@ import { Button, Card, Kicker, Section, StatusChip, Corners } from '../component
 import { Reveal, CountUp, Lazy3D, Gauge, Terminal } from '../components/widgets';
 import { metrics, domains, achievements } from '../lib/data';
 import { getPublishedAchievements } from '../lib/services/achievements';
+import { supabase } from '../lib/supabase';
 const loadScene = () => import('../components/RoboticsScene').then((m) => ({ default: m.RoboticsScene }));
 const loadArm = () => import('../components/three/RobotArm').then((m) => ({ default: m.RobotArm }));
 const loadDrone = () => import('../components/three/Drone').then((m) => ({ default: m.Drone }));
@@ -13,6 +14,7 @@ const domainIcons = [Bot, CircuitBoard, Eye, Cpu, Wrench, Cog, Code2, Trophy];
 
 export function Home() {
   const [spotlight, setSpotlight] = useState<any>(achievements[2]); // Fallback to AIR 1 ISRO 2025
+  const [featuredEvent, setFeaturedEvent] = useState<any>(null);
 
   useEffect(() => {
     let active = true;
@@ -33,6 +35,19 @@ export function Home() {
         }
       })
       .catch(() => {});
+
+    supabase
+      .from('club_events')
+      .select('*')
+      .eq('status', 'published')
+      .eq('featured', true)
+      .order('starts_at', { ascending: true })
+      .limit(1)
+      .then(({ data }) => {
+        if (!active) return;
+        if (data && data.length > 0) setFeaturedEvent(data[0]);
+      });
+
     return () => { active = false; };
   }, []);
 
@@ -181,6 +196,60 @@ export function Home() {
           </div>
         </div>
       </Section>
+
+      {/* ---------------- FEATURED EVENT SPOTLIGHT ---------------- */}
+      {featuredEvent && (
+        <Section className="pb-20 md:pb-28">
+          <div className="relative overflow-hidden rounded-3xl bg-tekhelet text-white shadow-xl shadow-tekhelet/20">
+            <div className="bp-grid-dark absolute inset-0 opacity-40" />
+            <div className="relative p-8 md:p-14">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <Kicker className="!text-celadon">Upcoming Event</Kicker>
+                <div className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-md">
+                  {new Date(featuredEvent.starts_at).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+                </div>
+              </div>
+              <h3 className="mt-4 font-display text-[clamp(2rem,4vw,3rem)] font-extrabold leading-tight tracking-tight">
+                {featuredEvent.title}
+              </h3>
+              <p className="mt-4 max-w-2xl text-lg text-white/80 leading-relaxed">
+                {featuredEvent.summary}
+              </p>
+              
+              <div className="mt-8 flex flex-wrap gap-4 text-sm font-medium">
+                <div className="flex items-center gap-2 rounded-lg bg-indigo/30 px-4 py-2 backdrop-blur-md">
+                  <div className="h-2 w-2 rounded-full bg-celadon" />
+                  <span>{new Date(featuredEvent.starts_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+                  {featuredEvent.ends_at && <span> - {new Date(featuredEvent.ends_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>}
+                </div>
+                <div className="flex items-center gap-2 rounded-lg bg-indigo/30 px-4 py-2 backdrop-blur-md">
+                  <span className="text-white/60">Location:</span>
+                  <span>{featuredEvent.location}</span>
+                </div>
+                {featuredEvent.capacity && (
+                  <div className="flex items-center gap-2 rounded-lg bg-indigo/30 px-4 py-2 backdrop-blur-md">
+                    <span className="text-white/60">Capacity:</span>
+                    <span>{featuredEvent.capacity} seats</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-10">
+                <Button 
+                  as="a" 
+                  href={featuredEvent.registration_url || '#'} 
+                  target={featuredEvent.registration_url ? '_blank' : undefined} 
+                  variant="cta" 
+                  size="lg"
+                  className="bg-white !text-tekhelet hover:bg-paper"
+                >
+                  Register Now <ArrowRight size={18} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Section>
+      )}
 
       {/* ---------------- RECRUITMENT CTA ---------------- */}
       <Section className="py-20 md:py-28">
