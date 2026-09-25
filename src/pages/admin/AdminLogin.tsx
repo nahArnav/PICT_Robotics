@@ -45,7 +45,7 @@ export function AdminLogin() {
             <SchematicVisual />
           </div>
           <div>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-paper-2/5 px-3 py-1 text-xs text-celadon">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-celadon">
               <Lock size={12} /> Restricted · Recruitment team only
             </div>
             <h2 className="font-display text-3xl font-extrabold leading-tight">Admin<br />Console</h2>

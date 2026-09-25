@@ -212,7 +212,7 @@ export function Interviews() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><Kicker>Interviews</Kicker><h1 className="mt-1 font-display text-2xl font-bold">{interviews.length} scheduled</h1></div>
-        <div className="flex gap-1 rounded-lg border border-line bg-paper-2 p-1">
+        <div className="flex gap-1 rounded-lg border border-line bg-white p-1">
           {['Schedule', 'Calendar', 'Panels'].map((v) => (
             <button key={v} onClick={() => setView(v)} className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${view === v ? 'bg-indigo text-white' : 'text-ink-soft'}`}>{v}</button>
           ))}
@@ -366,7 +366,7 @@ export function Evaluation() {
             <div className="flex flex-wrap gap-2">
               {[{ value: 'strong_yes', label: 'Strong Yes' }, { value: 'yes', label: 'Yes' }, { value: 'maybe', label: 'Maybe' }, { value: 'no', label: 'No' }].map((r) => (
                 <button key={r.value} onClick={() => setRec(r.value)}
-                  className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${rec === r.value ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-paper-2 text-ink-soft hover:border-line-strong'}`}>
+                  className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${rec === r.value ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-white text-ink-soft hover:border-line-strong'}`}>
                   {r.label}
                 </button>
               ))}
@@ -449,7 +449,7 @@ export function AdminContent() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><Kicker>Content</Kicker><h1 className="mt-1 font-display text-2xl font-bold">Website content</h1></div>
-        <div className="flex gap-1 rounded-lg border border-line bg-paper-2 p-1">
+        <div className="flex gap-1 rounded-lg border border-line bg-white p-1">
           {(['achievements', 'projects'] as const).map((t) => (
             <button key={t} onClick={() => setActiveTab(t)} className={`rounded-md px-3 py-1.5 text-sm font-medium capitalize transition ${activeTab === t ? 'bg-indigo text-white' : 'text-ink-soft'}`}>{t}</button>
           ))}

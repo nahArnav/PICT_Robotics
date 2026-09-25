@@ -42,19 +42,19 @@ export function AdminLayout() {
         <nav className="mt-6 space-y-0.5">
           {nav.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}
-              className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-paper-2/10 text-celadon' : 'text-white/60 hover:bg-paper-2/5 hover:text-white'}`}>
+              className={({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${isActive ? 'bg-white/10 text-celadon' : 'text-white/60 hover:bg-white/5 hover:text-white'}`}>
               <n.icon size={16} /> {n.label}
             </NavLink>
           ))}
         </nav>
         <div className="mt-auto space-y-3">
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-paper-2/5 p-3">
+          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
             <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-tekhelet font-display text-xs font-bold text-white">{admin.initials}</div>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{admin.name}</p>
               <p className="truncate text-[11px] text-white/50">{admin.role}</p>
             </div>
-            <button onClick={signOut} title="Sign out" className="ml-auto grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white/50 transition hover:bg-paper-2/10 hover:text-celadon">
+            <button onClick={signOut} title="Sign out" className="ml-auto grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-celadon">
               <LogOut size={15} />
             </button>
           </div>
@@ -63,20 +63,20 @@ export function AdminLayout() {
 
       <div className="min-w-0">
         {/* Top bar */}
-        <header className="sticky top-0 z-40 flex items-center gap-4 border-b border-line bg-paper-2/90 px-4 py-3 backdrop-blur md:px-6">
+        <header className="sticky top-0 z-40 flex items-center gap-4 border-b border-line bg-white/90 px-4 py-3 backdrop-blur md:px-6">
           <div className="lg:hidden"><Logo /></div>
           <div className="relative hidden max-w-md flex-1 md:block">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
             <input placeholder="Search applicants, tasks..." className="w-full rounded-lg border border-line bg-paper py-2 pl-9 pr-3 text-sm focus:border-tekhelet focus:outline-none" />
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <button className="flex items-center gap-2 rounded-lg border border-line bg-paper-2 px-3 py-1.5 text-sm font-medium">
+            <button className="flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-sm font-medium">
               FY Recruitment 2026 <ChevronDown size={14} className="text-ink-soft" />
             </button>
-            <button className="relative grid h-9 w-9 place-items-center rounded-lg border border-line bg-paper-2 text-ink-soft">
+            <button className="relative grid h-9 w-9 place-items-center rounded-lg border border-line bg-white text-ink-soft">
               <Bell size={16} /><span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-celadon ring-2 ring-white" />
             </button>
-            <button onClick={signOut} title="Sign out" className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-paper-2 text-ink-soft transition hover:border-tekhelet hover:text-tekhelet lg:hidden">
+            <button onClick={signOut} title="Sign out" className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-white text-ink-soft transition hover:border-tekhelet hover:text-tekhelet lg:hidden">
               <LogOut size={16} />
             </button>
             <div className="grid h-9 w-9 place-items-center rounded-full bg-tekhelet font-display text-sm font-bold text-white">{admin.initials}</div>
@@ -84,7 +84,7 @@ export function AdminLayout() {
         </header>
 
         {/* Mobile nav */}
-        <div className="flex gap-2 overflow-x-auto border-b border-line bg-paper-2 px-4 py-2 lg:hidden">
+        <div className="flex gap-2 overflow-x-auto border-b border-line bg-white px-4 py-2 lg:hidden">
           {nav.slice(0, 6).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}
               className={({ isActive }) => `whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium ${isActive ? 'bg-indigo text-white' : 'text-ink-soft'}`}>

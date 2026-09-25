@@ -30,7 +30,7 @@ export function DashboardLayout() {
   return (
     <div className="min-h-screen bg-paper lg:grid lg:grid-cols-[248px_1fr]">
       {/* Sidebar */}
-      <aside className="sticky top-0 hidden h-screen flex-col border-r border-line bg-paper-2 p-4 lg:flex">
+      <aside className="sticky top-0 hidden h-screen flex-col border-r border-line bg-white p-4 lg:flex">
         <div className="px-2 py-2"><Logo /></div>
         <nav className="mt-6 space-y-1">
           {nav.map((n) => (
@@ -53,7 +53,7 @@ export function DashboardLayout() {
       </aside>
 
       {/* Mobile top nav */}
-      <div className="sticky top-0 z-40 flex items-center gap-3 overflow-x-auto border-b border-line bg-paper-2/90 px-4 py-2 backdrop-blur lg:hidden">
+      <div className="sticky top-0 z-40 flex items-center gap-3 overflow-x-auto border-b border-line bg-white/90 px-4 py-2 backdrop-blur lg:hidden">
         {nav.map((n) => (
           <NavLink key={n.to} to={n.to} end={n.end}
             className={({ isActive }) => `whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium ${isActive ? 'bg-indigo text-white' : 'text-ink-soft'}`}>

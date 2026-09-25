@@ -8,20 +8,20 @@
   --font-sans: 'Inter', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Brand palette — Light Purple & Teal */
-  --color-indigo: #9671bd;   /* Medium purple — primary dark */
-  --color-tekhelet: #DAB1DA; /* Light purple — primary */
-  --color-glaucous: #D8BFD8; /* Thistle — secondary / info */
-  --color-teal: #77b5b6;     /* Teal — soft accent */
-  --color-celadon: #378d94;  /* Dark Teal — highlight / positive CTA */
+  /* Brand palette */
+  --color-indigo: #360568;   /* Persian Indigo — primary dark */
+  --color-tekhelet: #5b2a86; /* Tekhelet — primary */
+  --color-glaucous: #7785ac; /* Glaucous — secondary / info */
+  --color-teal: #9ac6c5;     /* Light Teal — soft accent */
+  --color-celadon: #a5e6ba;  /* Celadon — highlight / positive CTA */
 
   /* Neutrals */
-  --color-ink: #111111;      
-  --color-ink-soft: #5b5d66; 
-  --color-paper: #fafafa;    
-  --color-paper-2: #ffffff;  
-  --color-line: #d1cbe5;     /* Soft pastel purple for subtle lines */
-  --color-line-strong: #D8BFD8; /* Thistle for stronger borders */
+  --color-ink: #1a1424;      /* charcoal text */
+  --color-ink-soft: #4a4358;
+  --color-paper: #faf9fc;    /* warm off-white */
+  --color-paper-2: #f2f0f7;  /* very light grey */
+  --color-line: #e5e2ee;     /* muted border */
+  --color-line-strong: #d3cee0;
 }
 
 :root {

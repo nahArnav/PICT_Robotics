@@ -70,7 +70,7 @@ export function Projects() {
                 key={f}
                 onClick={() => setActive(f)}
                 className={`rounded-lg border px-3.5 py-1.5 text-sm font-medium transition ${
-                  active === f ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-paper-2 text-ink-soft hover:border-line-strong'
+                  active === f ? 'border-tekhelet bg-tekhelet text-white' : 'border-line bg-white text-ink-soft hover:border-line-strong'
                 }`}
               >
                 {f}
@@ -92,7 +92,7 @@ export function Projects() {
                 <div className="relative aspect-[16/10] overflow-hidden bg-paper-2">
                   <img src={p.image} alt={p.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
                   <span className="label absolute left-3 top-3 rounded bg-indigo/80 px-2 py-0.5 text-[10px] text-white backdrop-blur">{p.category}</span>
-                  <span className="absolute right-3 top-3 rounded bg-paper-2/90 px-2 py-0.5 text-[10px] font-semibold text-indigo">{p.year}</span>
+                  <span className="absolute right-3 top-3 rounded bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-indigo">{p.year}</span>
                 </div>
                 <div className="p-5">
                   <h3 className="font-display text-lg font-semibold tracking-tight">{p.name}</h3>
@@ -139,7 +139,7 @@ export function ProjectDetail() {
           <p className="mt-4 max-w-2xl text-lg text-white/70">{p.summary}</p>
           <div className="mt-6 flex flex-wrap gap-2">
             {p.tags.map((t) => (
-              <span key={t} className="rounded-md border border-white/20 bg-paper-2/5 px-2.5 py-1 text-xs">{t}</span>
+              <span key={t} className="rounded-md border border-white/20 bg-white/5 px-2.5 py-1 text-xs">{t}</span>
             ))}
           </div>
         </div>
@@ -183,7 +183,7 @@ export function ProjectDetail() {
 
 export function PageHead({ kicker, title, sub }: { kicker: string; title: string; sub: string }) {
   return (
-    <section className="relative overflow-hidden border-b border-line bg-paper-2">
+    <section className="relative overflow-hidden border-b border-line bg-white">
       <div className="bp-grid absolute inset-0 opacity-60" />
       <div className="relative mx-auto max-w-[1240px] px-6 py-16 md:px-10 md:py-20">
         <Kicker>{kicker}</Kicker>
