@@ -1,44 +1,53 @@
-/**
- * Lightweight client-side admin auth for the demo frontend.
- * In production this would be replaced by a real session/token from the backend,
- * but the surface (login / logout / isAuthed / current) stays the same.
- */
-const KEY = 'pict-robotics-admin';
-
-export type AdminUser = { name: string; email: string; role: string; initials: string };
-
-// Demo credentials — surfaced on the login screen so reviewers can get in.
-const ACCOUNTS: Record<string, { password: string; user: AdminUser }> = {
-  'admin@pictrobotics.in': {
-    password: 'robocon2026',
-    user: { name: 'Neha Kulkarni', email: 'admin@pictrobotics.in', role: 'Recruitment Lead', initials: 'NK' },
-  },
-  'coordinator@pictrobotics.in': {
-    password: 'buildbreak',
-    user: { name: 'Aryan Deshpande', email: 'coordinator@pictrobotics.in', role: 'Coordinator', initials: 'AD' },
-  },
+// Legacy import surface backed exclusively by Supabase Auth and database roles.
+import { getCurrentRole, supabase } from "./supabase";
+import { isAdminRole, refreshAuth } from "./auth";
+export type AdminUser = {
+  name: string;
+  email: string;
+  role: string;
+  initials: string;
 };
-
-export function login(email: string, password: string): { ok: true } | { ok: false; error: string } {
-  const acct = ACCOUNTS[email.trim().toLowerCase()];
-  if (!acct || acct.password !== password) return { ok: false, error: 'Invalid email or password.' };
-  sessionStorage.setItem(KEY, JSON.stringify(acct.user));
-  return { ok: true };
-}
-
-export function logout() {
-  sessionStorage.removeItem(KEY);
-}
-
-export function currentAdmin(): AdminUser | null {
-  try {
-    const raw = sessionStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as AdminUser) : null;
-  } catch {
-    return null;
+export async function login(email: string, password: string) {
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error)
+    return {
+      ok: false as const,
+      error: "Unable to sign in with these credentials.",
+    };
+  if (!isAdminRole(await getCurrentRole())) {
+    await supabase.auth.signOut();
+    return {
+      ok: false as const,
+      error: "This account is not authorised for administration.",
+    };
   }
+  await refreshAuth();
+  return { ok: true as const };
 }
-
-export function isAuthed() {
-  return currentAdmin() !== null;
+export async function logout() {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+}
+export async function currentAdmin(): Promise<AdminUser | null> {
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+  if (error || !user) return null;
+  const role = await getCurrentRole();
+  if (!role || !isAdminRole(role)) return null;
+  const name = String(user.user_metadata.full_name || user.email || "Admin");
+  return {
+    name,
+    email: user.email ?? "",
+    role,
+    initials: name
+      .split(" ")
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join(""),
+  };
+}
+export async function isAuthed() {
+  return Boolean(await currentAdmin());
 }

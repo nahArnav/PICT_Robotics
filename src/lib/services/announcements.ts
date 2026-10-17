@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase } from "../supabase";
 
 export type Announcement = {
   id: string;
@@ -25,12 +25,13 @@ export type AnnouncementInput = {
 /** Fetch published, non-expired announcements for public/applicant view. */
 export async function getPublishedAnnouncements(): Promise<Announcement[]> {
   const { data, error } = await supabase
-    .from('announcements')
-    .select('*')
-    .eq('published', true)
+    .from("announcements")
+    .select("*")
+    .eq("published", true)
+    .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
     .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
-    .order('published_at', { ascending: false, nullsFirst: false })
-    .order('created_at', { ascending: false });
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as Announcement[];
 }
@@ -38,9 +39,9 @@ export async function getPublishedAnnouncements(): Promise<Announcement[]> {
 /** Fetch all announcements (admin). */
 export async function getAllAnnouncements(): Promise<Announcement[]> {
   const { data, error } = await supabase
-    .from('announcements')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .from("announcements")
+    .select("*")
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as Announcement[];
 }
@@ -49,23 +50,22 @@ export async function getAllAnnouncements(): Promise<Announcement[]> {
 export async function createAnnouncement(input: AnnouncementInput): Promise<Announcement> {
   const row = {
     ...input,
-    published_at: input.published ? input.published_at ?? new Date().toISOString() : null,
+    published_at: input.published ? (input.published_at ?? new Date().toISOString()) : null,
   };
-  const { data, error } = await supabase
-    .from('announcements')
-    .insert(row)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("announcements").insert(row).select().single();
   if (error) throw error;
   return data as Announcement;
 }
 
 /** Update an announcement. */
-export async function updateAnnouncement(id: string, input: Partial<AnnouncementInput>): Promise<Announcement> {
+export async function updateAnnouncement(
+  id: string,
+  input: Partial<AnnouncementInput>,
+): Promise<Announcement> {
   const { data, error } = await supabase
-    .from('announcements')
+    .from("announcements")
     .update(input)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
   if (error) throw error;
@@ -74,6 +74,6 @@ export async function updateAnnouncement(id: string, input: Partial<Announcement
 
 /** Delete an announcement. */
 export async function deleteAnnouncement(id: string): Promise<void> {
-  const { error } = await supabase.from('announcements').delete().eq('id', id);
+  const { error } = await supabase.from("announcements").delete().eq("id", id);
   if (error) throw error;
 }

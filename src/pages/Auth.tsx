@@ -1,20 +1,26 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
-import { ArrowRight, ShieldCheck } from 'lucide-react';
-import { Button, Field, inputCls } from '../components/ui';
-import { Logo, SchematicVisual } from '../components/Logo';
-import { getCurrentRole, supabase } from '../lib/supabase';
-import { authErrorMessage, isAdminRole } from '../lib/auth';
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { Button, Field, inputCls } from "../components/ui";
+import { Logo, SchematicVisual } from "../components/Logo";
+import { getCurrentRole, supabase } from "../lib/supabase";
+import { authErrorMessage, isAdminRole } from "../lib/auth";
 
-export function Auth({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
+export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
   const nav = useNavigate();
-  const [step, setStep] = useState<'form' | 'verify'>('form');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [error, setError] = useState('');
+  const [params] = useSearchParams();
+  const invitationReturn = params.get("next");
+  const safeReturn =
+    invitationReturn && /^\/admin\/signup\?invite=[0-9a-f-]{36}$/i.test(invitationReturn)
+      ? invitationReturn
+      : null;
+  const [step, setStep] = useState<"form" | "verify">("form");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const isSignup = mode === 'signup';
+  const isSignup = mode === "signup";
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -27,8 +33,15 @@ export function Auth({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             <SchematicVisual />
           </div>
           <div>
-            <h2 className="font-display text-3xl font-extrabold leading-tight">Think. Build.<br />Break. Improve.</h2>
-            <p className="mt-3 max-w-sm text-white/60">One account for your entire recruitment journey — application, tasks, interview and result.</p>
+            <h2 className="font-display text-3xl font-extrabold leading-tight">
+              Think. Build.
+              <br />
+              Break. Improve.
+            </h2>
+            <p className="mt-3 max-w-sm text-white/60">
+              One account for your entire recruitment journey — application, tasks, interview and
+              result.
+            </p>
           </div>
         </div>
       </div>
@@ -36,63 +49,119 @@ export function Auth({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       {/* Right — form */}
       <div className="flex items-center justify-center bg-paper px-6 py-12">
         <div className="w-full max-w-sm">
-          <div className="lg:hidden"><Logo /></div>
-          {step === 'form' ? (
+          <div className="lg:hidden">
+            <Logo />
+          </div>
+          {step === "form" ? (
             <>
-              <h1 className="mt-8 font-display text-3xl font-bold lg:mt-0">{isSignup ? 'Create account' : 'Sign in'}</h1>
+              <h1 className="mt-8 font-display text-3xl font-bold lg:mt-0">
+                {isSignup ? "Create account" : "Sign in"}
+              </h1>
               <p className="mt-2 text-sm text-ink-soft">
-                {isSignup ? 'Use your PICT email to get started.' : 'Welcome back. Continue your recruitment.'}
+                {isSignup
+                  ? "Use your PICT email to get started."
+                  : "Welcome back. Continue your recruitment."}
               </p>
               <form
                 className="mt-8 space-y-4"
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  setBusy(true); setError('');
+                  setBusy(true);
+                  setError("");
                   try {
                     if (isSignup) {
-                      const { error: signUpError } = await supabase.auth.signUp({
+                      const { data, error: signUpError } = await supabase.auth.signUp({
                         email: email.trim().toLowerCase(),
                         password,
-                        options: { data: { full_name: fullName.trim() }, emailRedirectTo: `${window.location.origin}/signin` },
+                        options: {
+                          data: { full_name: fullName.trim() },
+                          emailRedirectTo: `${window.location.origin}/signin`,
+                        },
                       });
                       if (signUpError) throw signUpError;
-                      setStep('verify');
+                      if (data.session) nav("/dashboard", { replace: true });
+                      else setStep("verify");
                     } else {
-                      const { error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+                      const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email: email.trim().toLowerCase(),
+                        password,
+                      });
                       if (signInError) throw signInError;
-                      const role = await getCurrentRole();
-                      if (isAdminRole(role)) {
-                        nav('/admin', { replace: true });
+                      if (safeReturn) {
+                        nav(safeReturn, { replace: true });
                         return;
                       }
-                      if (role !== 'applicant') {
-                        await supabase.auth.signOut();
-                        throw new Error('Your account is not ready yet. Please try again after verifying your email.');
+                      const role = await getCurrentRole();
+                      if (isAdminRole(role)) {
+                        nav("/admin", { replace: true });
+                        return;
                       }
-                      nav('/dashboard', { replace: true });
+                      if (role !== "applicant") {
+                        await supabase.auth.signOut();
+                        throw new Error(
+                          "Your account is not ready yet. Please try again after verifying your email.",
+                        );
+                      }
+                      nav("/dashboard", { replace: true });
                     }
-                  } catch (err) { setError(authErrorMessage(err, 'Unable to continue.')); }
-                  finally { setBusy(false); }
+                  } catch (err) {
+                    setError(authErrorMessage(err, "Unable to continue."));
+                  } finally {
+                    setBusy(false);
+                  }
                 }}
               >
                 {isSignup && (
-                  <Field label="Full name" required><input required value={fullName} onChange={(e) => setFullName(e.target.value)} className={inputCls} placeholder="Aarav Shah" /></Field>
+                  <Field label="Full name" required>
+                    <input
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className={inputCls}
+                      placeholder="Aarav Shah"
+                    />
+                  </Field>
                 )}
                 <Field label="PICT email" required>
-                  <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} placeholder="you@pict.edu" />
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={inputCls}
+                    placeholder="you@pict.edu"
+                  />
                 </Field>
                 <Field label="Password" required>
-                  <input required minLength={8} type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} placeholder="At least 8 characters" />
+                  <input
+                    required
+                    minLength={8}
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={inputCls}
+                    placeholder="At least 8 characters"
+                  />
                 </Field>
-                {error && <p className="rounded-lg border border-[#f3c0c0] bg-[#fbe9e9]/60 px-3 py-2 text-sm text-[#a13939]">{error}</p>}
+                {error && (
+                  <p className="rounded-lg border border-[#f3c0c0] bg-[#fbe9e9]/60 px-3 py-2 text-sm text-[#a13939]">
+                    {error}
+                  </p>
+                )}
                 <Button variant="cta" size="lg" className="w-full" disabled={busy}>
-                  {busy ? 'Please wait…' : isSignup ? 'Create account' : 'Sign in'} <ArrowRight size={16} />
+                  {busy ? "Please wait…" : isSignup ? "Create account" : "Sign in"}{" "}
+                  <ArrowRight size={16} />
                 </Button>
               </form>
+              {!isSignup && (
+                <Link to="/forgot-password" className="mt-4 block text-sm text-tekhelet">
+                  Forgot password?
+                </Link>
+              )}
               <p className="mt-6 text-center text-sm text-ink-soft">
-                {isSignup ? 'Already have an account? ' : 'New here? '}
-                <Link to={isSignup ? '/signin' : '/signup'} className="font-semibold text-tekhelet">
-                  {isSignup ? 'Sign in' : 'Create account'}
+                {isSignup ? "Already have an account? " : "New here? "}
+                <Link to={isSignup ? "/signin" : "/signup"} className="font-semibold text-tekhelet">
+                  {isSignup ? "Sign in" : "Create account"}
                 </Link>
               </p>
             </>
@@ -102,8 +171,13 @@ export function Auth({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 <ShieldCheck size={26} />
               </div>
               <h1 className="mt-6 font-display text-2xl font-bold">Verify your email</h1>
-              <p className="mt-2 text-sm text-ink-soft">Check your inbox and confirm your PICT email. Then return here and sign in to continue.</p>
-              <Button to="/signin" variant="cta" size="lg" className="mt-6 w-full">Return to sign in <ArrowRight size={16} /></Button>
+              <p className="mt-2 text-sm text-ink-soft">
+                Check your inbox and confirm your PICT email. Then return here and sign in to
+                continue.
+              </p>
+              <Button to="/signin" variant="cta" size="lg" className="mt-6 w-full">
+                Return to sign in <ArrowRight size={16} />
+              </Button>
             </div>
           )}
         </div>

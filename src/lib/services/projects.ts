@@ -1,8 +1,10 @@
-import { supabase } from '../supabase';
+import { supabase } from "../supabase";
 
 export type Project = {
   id: string;
   title: string;
+  slug: string | null;
+  tags: string[];
   description: string;
   year: number;
   category: string | null;
@@ -16,16 +18,16 @@ export type Project = {
   updated_at: string;
 };
 
-export type ProjectInput = Omit<Project, 'id' | 'created_at' | 'updated_at'>;
+export type ProjectInput = Omit<Project, "id" | "created_at" | "updated_at">;
 
 /** Fetch published projects for public pages. */
 export async function getPublishedProjects(): Promise<Project[]> {
   const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('published', true)
-    .order('year', { ascending: false })
-    .order('display_order');
+    .from("projects")
+    .select("*")
+    .eq("published", true)
+    .order("year", { ascending: false })
+    .order("display_order");
   if (error) throw error;
   return (data ?? []) as Project[];
 }
@@ -33,21 +35,17 @@ export async function getPublishedProjects(): Promise<Project[]> {
 /** Fetch all projects (admin — RLS limits to staff). */
 export async function getAllProjects(): Promise<Project[]> {
   const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .order('year', { ascending: false })
-    .order('display_order');
+    .from("projects")
+    .select("*")
+    .order("year", { ascending: false })
+    .order("display_order");
   if (error) throw error;
   return (data ?? []) as Project[];
 }
 
 /** Create a new project. */
 export async function createProject(input: ProjectInput): Promise<Project> {
-  const { data, error } = await supabase
-    .from('projects')
-    .insert(input)
-    .select()
-    .single();
+  const { data, error } = await supabase.from("projects").insert(input).select().single();
   if (error) throw error;
   return data as Project;
 }
@@ -55,9 +53,9 @@ export async function createProject(input: ProjectInput): Promise<Project> {
 /** Update an existing project. */
 export async function updateProject(id: string, input: Partial<ProjectInput>): Promise<Project> {
   const { data, error } = await supabase
-    .from('projects')
+    .from("projects")
     .update(input)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
   if (error) throw error;
@@ -66,6 +64,6 @@ export async function updateProject(id: string, input: Partial<ProjectInput>): P
 
 /** Delete a project. */
 export async function deleteProject(id: string): Promise<void> {
-  const { error } = await supabase.from('projects').delete().eq('id', id);
+  const { error } = await supabase.from("projects").delete().eq("id", id);
   if (error) throw error;
 }

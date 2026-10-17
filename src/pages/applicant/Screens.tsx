@@ -1,389 +1,657 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
-import { Check, Lock, ArrowRight, Link2, CalendarClock, MapPin, Users, Clock, PartyPopper } from 'lucide-react';
-import { Button, Card, Field, Kicker, StatusChip, inputCls, GithubIcon } from '../../components/ui';
-import { LineFollowerTrack } from '../../components/widgets';
-import { useAuthState, authErrorMessage } from '../../lib/auth';
-import { loadDashboardData, deriveProgressStages, type ApplicantDashboardData } from '../../lib/services/applicant';
-import { getPublishedAnnouncements, type Announcement } from '../../lib/services/announcements';
+import { useState } from "react";
+import { Link } from "react-router";
+import { ArrowRight, CalendarClock, Check, Clock, Lock, PartyPopper } from "lucide-react";
+import { Button, Card, Field, Kicker, StatusChip, inputCls } from "../../components/ui";
+import { DataState } from "../../components/DataState";
+import { useDashboard } from "./context";
+import { deriveProgressStages } from "../../lib/services/applicant";
+import { authErrorMessage, useAuthState } from "../../lib/auth";
+import { useRemote } from "../../lib/useRemote";
+import { supabase } from "../../lib/supabase";
+import { getPublishedAnnouncements } from "../../lib/services/announcements";
+import { markAsRead, markAllAsRead } from "../../lib/services/notifications";
+import { updateApplicantProfile, type ProfileInput } from "../../lib/recruitment";
+import type { TaskRow, TaskSubmissionRow } from "../../lib/database";
+import { uploadPrivateDocument, privateDocumentUrl } from "../../lib/services/storage";
 
-/* ------------------- Progress stepper (shared) ------------------- */
-function ProgressStepper({ status }: { status: string | null }) {
-  const stages = deriveProgressStages(status as any);
-  return (
-    <div className="grid gap-3 sm:grid-cols-5">
-      {stages.map((s, i) => {
-        const tone = s.state === 'done' ? 'done' : s.state === 'current' ? 'progress' : 'locked';
-        return (
-          <div key={s.name} className={`relative rounded-xl border p-4 ${s.state === 'current' ? 'border-tekhelet bg-tekhelet/[0.04]' : 'border-line bg-white'}`}>
-            <div className="mb-2 flex items-center justify-between">
-              <span className="label text-[10px] text-glaucous">{String(i + 1).padStart(2, '0')}</span>
-              <span className={`grid h-6 w-6 place-items-center rounded-full ${s.state === 'done' ? 'bg-celadon text-indigo' : s.state === 'current' ? 'bg-tekhelet text-white' : 'bg-paper-2 text-ink-soft'}`}>
-                {s.state === 'done' ? <Check size={13} /> : s.state === 'locked' ? <Lock size={12} /> : <Clock size={12} />}
-              </span>
-            </div>
-            <p className="text-sm font-semibold">{s.name}</p>
-            <div className="mt-2"><StatusChip tone={tone as any} dot={false}>{s.state === 'done' ? 'Cleared' : s.state === 'current' ? 'Current' : 'Locked'}</StatusChip></div>
-          </div>
-        );
-      })}
-    </div>
-  );
+const label = (value?: string | null) => (value ? value.replace(/_/g, " ") : "Not started");
+function DashboardState() {
+  const { loading, error, refresh } = useDashboard();
+  return <DataState loading={loading} error={error} retry={refresh} />;
 }
 
-/* ------------------- Overview ------------------- */
 export function DashOverview() {
-  const auth = useAuthState();
-  const [data, setData] = useState<ApplicantDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (!auth.ready || !auth.user) return;
-    let active = true;
-    loadDashboardData(auth.user.id)
-      .then((d) => { if (active) setData(d); })
-      .catch((err) => { if (active) setError(authErrorMessage(err, 'Unable to load dashboard.')); })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
-  }, [auth.ready, auth.user]);
-
-  if (loading) return <div className="py-12 text-center text-sm text-ink-soft">Loading your dashboard…</div>;
-  if (error) return <div className="py-12 text-center text-sm text-[#a13939]">{error}</div>;
-  if (!data) return null;
-
-  const name = data.profile.full_name?.split(' ')[0] ?? 'Applicant';
-  const status = data.application?.status ?? null;
-  const appId = data.application?.id ? `RC-${data.profile.year ?? 'FY'}-${data.application.id.slice(0, 4).toUpperCase()}` : '—';
-  const primaryDomain = (data.application as any)?.domain_preferences?.[0]?.domain?.name ?? '—';
-
-  const statusLabel: Record<string, string> = {
-    draft: 'Draft', submitted: 'Submitted', under_review: 'Under Review',
-    shortlisted: 'Shortlisted', interview_scheduled: 'Interview Scheduled',
-    selected: 'Selected', waitlisted: 'Waitlisted', rejected: 'Not Selected', withdrawn: 'Withdrawn',
-  };
-
+  const { data, loading, error } = useDashboard();
+  if (loading || error || !data) return <DashboardState />;
+  const status = data.application?.status;
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold">Welcome back, {name}</h1>
-          <p className="text-sm text-ink-soft">{data.cycle?.name ?? 'Recruitment'} · Application <span className="font-mono">{appId}</span></p>
+          <h1 className="font-display text-2xl font-bold">
+            Welcome back, {data.profile.full_name.split(" ")[0] || "Applicant"}
+          </h1>
+          <p className="text-sm text-ink-soft">
+            {data.cycle?.name ?? "Recruitment"} · {data.profile.email}
+          </p>
         </div>
-        <StatusChip tone={status ? 'progress' : 'neutral'}>{statusLabel[status ?? ''] ?? 'Not Started'}</StatusChip>
+        <StatusChip tone="progress">{label(status)}</StatusChip>
       </div>
-
       <Card className="p-6">
         <Kicker>Recruitment progress</Kicker>
-        <p className="mb-4 mt-1 text-sm text-ink-soft">Where you are, what's next, and when it's due.</p>
-        <ProgressStepper status={status} />
-      </Card>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="Current Stage" value={statusLabel[status ?? ''] ?? 'Apply'} sub={data.cycle ? `Deadline · ${new Date(data.cycle.application_close).toLocaleDateString()}` : '—'} tone="progress" />
-        <StatCard label="Application ID" value={appId} sub={`${data.profile.year ?? 'FY'} · ${primaryDomain}`} tone="info" />
-        <StatCard label="Current Status" value={statusLabel[status ?? ''] ?? 'Not Started'} sub="Check back for updates" tone="warn" />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-        {!data.application || data.application.status === 'draft' ? (
-          <Card className="p-6">
-            <Kicker>Get started</Kicker>
-            <h3 className="mt-3 font-display text-xl font-bold">Complete your application</h3>
-            <p className="mt-2 text-sm text-ink-soft">Fill out your details and submit before the deadline.</p>
-            <Button to="/apply" variant="cta" className="mt-5">Start Application <ArrowRight size={16} /></Button>
-          </Card>
-        ) : (
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <Kicker>Application</Kicker>
-              <StatusChip tone="done" dot={false}>Submitted</StatusChip>
+        <div className="mt-4 grid gap-3 sm:grid-cols-5">
+          {deriveProgressStages(status ?? null).map((stage, index) => (
+            <div
+              key={stage.name}
+              className={`rounded-xl border p-4 ${
+                stage.state === "current" ? "border-tekhelet bg-tekhelet/[0.04]" : "border-line"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="label text-xs text-glaucous">{index + 1}</span>
+                {stage.state === "done" ? (
+                  <Check size={15} />
+                ) : stage.state === "current" ? (
+                  <Clock size={15} />
+                ) : (
+                  <Lock size={15} />
+                )}
+              </div>
+              <p className="mt-3 text-sm font-semibold">{stage.name}</p>
+              <p className="mt-1 text-xs text-ink-soft">
+                {stage.state === "done"
+                  ? "Completed"
+                  : stage.state === "current"
+                    ? "Current"
+                    : "Pending"}
+              </p>
             </div>
-            <h3 className="mt-3 font-display text-xl font-bold">Application Submitted</h3>
-            <p className="mt-2 text-sm text-ink-soft">Your application has been received. Check back for status updates.</p>
-            <Button to="/dashboard/application" variant="outline" className="mt-5">View Application <ArrowRight size={16} /></Button>
-          </Card>
-        )}
+          ))}
+        </div>
+      </Card>
+      <div className="grid gap-6 md:grid-cols-2">
         <Card className="p-6">
-          <Kicker>Announcements</Kicker>
-          <ul className="mt-3 space-y-3">
-            {data.notifications.slice(0, 4).map((n) => (
-              <li key={n.id} className="border-b border-line pb-3 last:border-0 last:pb-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold">{n.title}</p>
-                  <span className="shrink-0 text-xs text-ink-soft">{new Date(n.created_at).toLocaleDateString()}</span>
-                </div>
-                <p className="mt-0.5 text-xs text-ink-soft">{n.message}</p>
-              </li>
-            ))}
-            {data.notifications.length === 0 && <li className="text-sm text-ink-soft">No announcements yet.</li>}
-          </ul>
+          <Kicker>Application</Kicker>
+          <h2 className="mt-3 font-display text-xl font-bold">
+            {!status
+              ? "Start your application"
+              : status === "draft"
+                ? "Continue your draft"
+                : `Status: ${label(status)}`}
+          </h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            {data.cycle
+              ? `Applications close ${new Date(data.cycle.application_close).toLocaleString()}`
+              : "No recruitment campaign is available right now."}
+          </p>
+          <Button
+            to={
+              !status || status === "draft"
+                ? `/apply?cycle=${data.cycle?.id ?? ""}`
+                : "/dashboard/application"
+            }
+            variant="cta"
+            className="mt-5"
+          >
+            {!status || status === "draft" ? "Open application" : "View application"}
+            <ArrowRight size={16} />
+          </Button>
         </Card>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, sub, tone }: { label: string; value: string; sub: string; tone: any }) {
-  return (
-    <Card className="p-5">
-      <div className="flex items-center justify-between">
-        <span className="label text-[10px] text-glaucous">{label}</span>
-        <StatusChip tone={tone} dot={false}>{tone === 'progress' ? 'Active' : tone === 'warn' ? 'Action' : 'Info'}</StatusChip>
-      </div>
-      <p className="mt-2 font-display text-xl font-bold">{value}</p>
-      <p className="mt-1 text-xs text-ink-soft">{sub}</p>
-    </Card>
-  );
-}
-
-/* ------------------- Task screen ------------------- */
-export function DashTask() {
-  const [submitted, setSubmitted] = useState(false);
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Kicker>Task Round</Kicker>
-          <h1 className="mt-1 font-display text-2xl font-bold">Line Following Robot Simulation</h1>
-        </div>
-        <StatusChip tone={submitted ? 'done' : 'warn'} dot={false}>{submitted ? 'Submitted' : 'Not submitted'}</StatusChip>
-      </div>
-
-      <Card className="p-6">
-        <div className="flex flex-wrap gap-6 text-sm">
-          <div><span className="label text-[10px] text-glaucous">Deadline</span><p className="mt-1 font-medium">24 Sep · 11:59 PM</p></div>
-          <div><span className="label text-[10px] text-glaucous">Domain</span><p className="mt-1 font-medium">Software</p></div>
-          <div><span className="label text-[10px] text-glaucous">Weight</span><p className="mt-1 font-medium">Task Round · 30%</p></div>
-        </div>
-        <hr className="my-5 border-line" />
-        <div className="mb-5 overflow-hidden rounded-xl border border-line bg-paper-2/50 px-4 py-3">
-          <span className="label text-[10px] text-glaucous">Reference behaviour</span>
-          <LineFollowerTrack className="mt-1 h-20 w-full" />
-        </div>
-        <h3 className="font-display font-semibold">Instructions</h3>
-        <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-ink-soft">
-          <li>Simulate a differential-drive robot following a black line on a white track.</li>
-          <li>Implement a PID controller and expose tunable gains.</li>
-          <li>Handle at least one 90° turn and one gap in the line.</li>
-          <li>Record a 30-second demo and include it in your submission.</li>
-        </ol>
-        <h3 className="mt-5 font-display font-semibold">Resources</h3>
-        <ul className="mt-2 space-y-1 text-sm">
-          <li><a className="text-tekhelet hover:underline" href="#">Starter simulation template ↗</a></li>
-          <li><a className="text-tekhelet hover:underline" href="#">PID tuning guide ↗</a></li>
-        </ul>
-      </Card>
-
-      <Card className="p-6">
-        <h3 className="font-display font-semibold">{submitted ? 'Your submission' : 'Submission'}</h3>
-        {submitted ? (
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-2 rounded-lg bg-celadon/15 px-4 py-3 text-sm text-[#1e6b43]">
-              <Check size={16} /> Submitted
+        <Card className="p-6">
+          <Kicker>Recent updates</Kicker>
+          {data.notifications.slice(0, 4).map((item) => (
+            <div key={item.id} className="mt-3 border-b border-line pb-3">
+              <p className="text-sm font-semibold">{item.title}</p>
+              <p className="mt-1 text-sm text-ink-soft">{item.message}</p>
             </div>
-            <Button variant="outline" onClick={() => setSubmitted(false)}>Edit Submission</Button>
-          </div>
-        ) : (
-          <form className="mt-4 space-y-4" onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
-            <Field label="GitHub URL" required>
-              <div className="relative"><GithubIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" /><input className={`${inputCls} pl-9`} placeholder="github.com/you/project" /></div>
-            </Field>
-            <Field label="Drive URL (demo video)" required>
-              <div className="relative"><Link2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" /><input className={`${inputCls} pl-9`} placeholder="drive.google.com/..." /></div>
-            </Field>
-            <Field label="Notes"><textarea rows={3} className={inputCls} placeholder="Anything the reviewers should know..." /></Field>
-            <Button variant="cta" className="w-full">Submit Task</Button>
-          </form>
-        )}
-      </Card>
-    </div>
-  );
-}
-
-/* ------------------- Interview screen ------------------- */
-export function DashInterview() {
-  const auth = useAuthState();
-  const [data, setData] = useState<ApplicantDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!auth.ready || !auth.user) return;
-    loadDashboardData(auth.user.id).then(setData).catch(() => {}).finally(() => setLoading(false));
-  }, [auth.ready, auth.user]);
-
-  if (loading) return <div className="py-12 text-center text-sm text-ink-soft">Loading…</div>;
-
-  const interview = data?.interviews?.[0];
-
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><Kicker>Technical Interview</Kicker><h1 className="mt-1 font-display text-2xl font-bold">Your interview</h1></div>
-        <StatusChip tone={interview ? 'done' : 'neutral'} dot={false}>{interview ? 'Scheduled' : 'Not Scheduled'}</StatusChip>
+          ))}
+          {!data.notifications.length && (
+            <p className="mt-4 text-sm text-ink-soft">No notifications yet.</p>
+          )}
+          <Link to="/dashboard/announcements" className="mt-4 block text-sm text-tekhelet">
+            View all updates
+          </Link>
+        </Card>
       </div>
-
-      {interview ? (
-        <>
-          <Card className="overflow-hidden">
-            <div className="grid gap-px bg-line sm:grid-cols-4">
-              {[
-                [CalendarClock, 'Date', new Date(interview.scheduled_at).toLocaleDateString()],
-                [Clock, 'Time', new Date(interview.scheduled_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })],
-                [MapPin, 'Venue', interview.location ?? 'TBD'],
-                [Users, 'Duration', `${interview.duration_minutes} min`],
-              ].map(([Icon, k, v]: any) => (
-                <div key={k} className="bg-white p-5">
-                  <Icon size={16} className="text-tekhelet" />
-                  <p className="label mt-2 text-[10px] text-glaucous">{k}</p>
-                  <p className="mt-1 text-sm font-semibold">{v}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
-          <Card className="p-6">
-            <h3 className="font-display font-semibold">Instructions</h3>
-            <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm text-ink-soft">
-              <li>Arrive 10 minutes early at the designated venue.</li>
-              <li>Bring a laptop with your task submission ready to demo.</li>
-              <li>Be ready to discuss your projects and fundamentals.</li>
-            </ul>
-          </Card>
-        </>
-      ) : (
-        <Card className="p-10 text-center">
-          <StatusChip tone="neutral" dot={false}>Not Scheduled</StatusChip>
-          <h2 className="mt-4 font-display text-xl font-bold">Interview not yet scheduled</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-ink-soft">When your interview is assigned, details will appear here. Check back later.</p>
-        </Card>
-      )}
     </div>
   );
 }
 
-/* ------------------- Result screen ------------------- */
-export function DashResult() {
-  const auth = useAuthState();
-  const [data, setData] = useState<ApplicantDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!auth.ready || !auth.user) return;
-    loadDashboardData(auth.user.id).then(setData).catch(() => {}).finally(() => setLoading(false));
-  }, [auth.ready, auth.user]);
-
-  if (loading) return <div className="py-12 text-center text-sm text-ink-soft">Loading…</div>;
-
-  const status = data?.application?.status;
-
-  return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      {status === 'selected' && (
-        <Card className="relative overflow-hidden bg-indigo p-10 text-center text-white">
-          <div className="bp-grid-dark absolute inset-0 opacity-60" />
-          <div className="relative">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-celadon text-indigo"><PartyPopper size={26} /></div>
-            <p className="label mt-6 text-[11px] text-teal">Result · {data?.cycle?.name ?? 'Recruitment'}</p>
-            <h1 className="mt-3 font-display text-3xl font-extrabold leading-tight md:text-4xl">WELCOME TO<br /><span className="text-celadon">PICT ROBOTICS CLUB</span></h1>
-            <p className="mt-4 text-white/70">Your recruitment process is complete. We can't wait to build with you.</p>
-            <Button variant="cta" className="mt-7">Continue <ArrowRight size={16} /></Button>
-          </div>
-        </Card>
-      )}
-      {status === 'waitlisted' && <ResultSimple tone="warn" title="Waitlisted" body="You're on the waitlist. We'll reach out if a spot opens up. Thank you for applying." />}
-      {status === 'rejected' && <ResultSimple tone="neutral" title="Not Selected This Time" body="Thank you for applying. We encourage you to build more and apply again next cycle." />}
-      {(!status || !['selected', 'waitlisted', 'rejected'].includes(status)) && (
-        <ResultSimple tone="progress" title="Result Pending" body="Your recruitment process is ongoing. Results will be announced once all rounds are complete." />
-      )}
-    </div>
-  );
-}
-
-function ResultSimple({ title, body, tone }: { title: string; body: string; tone: any }) {
-  return (
-    <Card className="p-10 text-center">
-      <div className="mx-auto mb-4"><StatusChip tone={tone} dot={false}>{title}</StatusChip></div>
-      <h1 className="font-display text-2xl font-bold">{title}</h1>
-      <p className="mx-auto mt-3 max-w-md text-ink-soft">{body}</p>
-      <Button to="/" variant="outline" className="mt-6">Back to home</Button>
-    </Card>
-  );
-}
-
-/* ------------------- Application (read-only) & Announcements ------------------- */
 export function DashApplication() {
-  const auth = useAuthState();
-  const [data, setData] = useState<ApplicantDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!auth.ready || !auth.user) return;
-    loadDashboardData(auth.user.id).then(setData).catch(() => {}).finally(() => setLoading(false));
-  }, [auth.ready, auth.user]);
-
-  if (loading) return <div className="py-12 text-center text-sm text-ink-soft">Loading application…</div>;
-
-  const app = data?.application;
-  const profile = data?.profile;
-
+  const { data, loading, error } = useDashboard();
+  if (loading || error || !data) return <DashboardState />;
+  const app = data.application;
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div><Kicker>Your application</Kicker><h1 className="mt-1 font-display text-2xl font-bold">{app?.status === 'draft' ? 'Draft application' : 'Submitted application'}</h1></div>
+      <div>
+        <Kicker>Your application</Kicker>
+        <h1 className="mt-1 font-display text-2xl font-bold">
+          {app ? label(app.status) : "No application yet"}
+        </h1>
+      </div>
       <Card className="p-6">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           {[
-            ['Name', profile?.full_name ?? '—'],
-            ['Email', profile?.email ?? '—'],
-            ['Branch · Division', `${profile?.branch ?? '—'} · ${profile?.division ?? '—'}`],
-            ['Year', profile?.year === 'FY' ? 'First Year' : profile?.year === 'SY' ? 'Second Year' : '—'],
-            ['Primary', (app as any)?.domain_preferences?.[0]?.domain?.name ?? '—'],
-            ['Secondary', (app as any)?.domain_preferences?.[1]?.domain?.name ?? '—'],
-          ].map(([k, v]) => (
-            <div key={k}><span className="label text-[10px] text-glaucous">{k}</span><p className="mt-0.5 font-medium">{v}</p></div>
+            ["Name", data.profile.full_name],
+            ["Email", data.profile.email],
+            [
+              "Branch / division",
+              `${data.profile.branch ?? "—"} · ${data.profile.division ?? "—"}`,
+            ],
+            ["Year", data.profile.year ?? "—"],
+            ...(app?.domain_preferences.map((preference, index) => [
+              `${["Primary", "Secondary", "Third"][index] ?? `Preference ${index + 1}`} domain`,
+              preference.domain.name,
+            ]) ?? []),
+          ].map(([key, value]) => (
+            <div key={key}>
+              <span className="label text-[10px] text-glaucous">{key}</span>
+              <p className="mt-1 font-medium">{value}</p>
+            </div>
           ))}
         </div>
       </Card>
       {app && (
-        <Card className="p-6">
-          <h3 className="font-display font-semibold">Details</h3>
-          <div className="mt-3 space-y-4 text-sm">
-            {app.motivation && <div><p className="font-medium">Why do you want to join Robotics Club?</p><p className="mt-1 text-ink-soft">{app.motivation}</p></div>}
-            {app.experience_summary && <div><p className="font-medium">Experience</p><p className="mt-1 text-ink-soft">{app.experience_summary}</p></div>}
-            {(app as any)?.answers?.map((a: any) => (
-              <div key={a.question_id}><p className="font-medium">{a.question?.question ?? 'Question'}</p><p className="mt-1 text-ink-soft">{String(a.answer)}</p></div>
-            ))}
+        <Card className="space-y-4 p-6">
+          <div>
+            <p className="font-semibold">Why do you want to join?</p>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-ink-soft">{app.motivation}</p>
           </div>
+          <div>
+            <p className="font-semibold">Experience</p>
+            <p className="text-sm text-ink-soft">{app.experience_summary || "—"}</p>
+          </div>
+          {app.answers.map((answer) => (
+            <div key={answer.question_id}>
+              <p className="font-semibold">{answer.question.question}</p>
+              <p className="mt-1 whitespace-pre-wrap text-sm text-ink-soft">
+                {Array.isArray(answer.answer)
+                  ? answer.answer.join(", ")
+                  : String(answer.answer ?? "")}
+              </p>
+            </div>
+          ))}
         </Card>
       )}
-      {!app && <Card className="p-6 text-center text-sm text-ink-soft">You haven't started an application yet. <Link to="/apply" className="font-semibold text-tekhelet">Apply now</Link></Card>}
+      {(!app || app.status === "draft") && (
+        <Button to={`/apply?cycle=${data.cycle?.id ?? ""}`} variant="cta">
+          {app ? "Continue draft" : "Start application"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export function DashTask() {
+  const dashboard = useDashboard();
+  const app = dashboard.data?.application;
+  const remote = useRemote(async () => {
+    if (!app) return { tasks: [], submissions: [] };
+    const [tasks, submissions] = await Promise.all([
+      supabase
+        .from("recruitment_tasks")
+        .select("*")
+        .eq("recruitment_cycle_id", app.recruitment_cycle_id)
+        .eq("active", true)
+        .order("deadline"),
+      supabase.from("task_submissions").select("*").eq("application_id", app.id),
+    ]);
+    if (tasks.error) throw tasks.error;
+    if (submissions.error) throw submissions.error;
+    return { tasks: tasks.data ?? [], submissions: submissions.data ?? [] };
+  }, [app?.id]);
+  if (dashboard.loading || dashboard.error) return <DashboardState />;
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <Kicker>Task round</Kicker>
+        <h1 className="font-display text-2xl font-bold">Your tasks</h1>
+      </div>
+      <DataState
+        loading={remote.loading}
+        error={remote.error}
+        retry={remote.refresh}
+        empty={
+          !remote.loading && !remote.data?.tasks.length
+            ? "No tasks have been published for your application."
+            : undefined
+        }
+      />
+      {app &&
+        remote.data?.tasks.map((task) => (
+          <TaskForm
+            key={task.id}
+            task={task}
+            applicationId={app.id}
+            saved={remote.data?.submissions.find((item) => item.task_id === task.id)}
+            refresh={remote.refresh}
+          />
+        ))}
+    </div>
+  );
+}
+function TaskForm({
+  task,
+  applicationId,
+  saved,
+  refresh,
+}: {
+  task: TaskRow;
+  applicationId: string;
+  saved?: TaskSubmissionRow;
+  refresh: () => void;
+}) {
+  const [repo, setRepo] = useState(saved?.repository_url ?? "");
+  const [demo, setDemo] = useState(saved?.demo_url ?? "");
+  const [notes, setNotes] = useState(saved?.notes ?? "");
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+  const closed = new Date(task.deadline) <= new Date();
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-bold">{task.title}</h2>
+        <StatusChip tone={saved ? "done" : "warn"}>
+          {saved ? "Submitted" : "Not submitted"}
+        </StatusChip>
+      </div>
+      <p className="mt-2 text-sm text-ink-soft">
+        Deadline · {new Date(task.deadline).toLocaleString()}
+      </p>
+      <p className="my-5 whitespace-pre-wrap text-sm">{task.instructions}</p>
+      <form
+        className="space-y-4"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setBusy(true);
+          setNotice("");
+          try {
+            const { error } = await supabase.rpc("submit_task", {
+              p_task_id: task.id,
+              p_application_id: applicationId,
+              p_repository_url: repo,
+              p_demo_url: demo,
+              p_notes: notes,
+            });
+            if (error) throw error;
+            setNotice("Task submission saved.");
+            refresh();
+          } catch (error) {
+            setNotice(authErrorMessage(error, "Unable to save your task submission."));
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        <Field label="Repository URL" required>
+          <input
+            required
+            type="url"
+            className={inputCls}
+            value={repo}
+            onChange={(event) => setRepo(event.target.value)}
+          />
+        </Field>
+        <Field label="Demo video URL" required>
+          <input
+            required
+            type="url"
+            className={inputCls}
+            value={demo}
+            onChange={(event) => setDemo(event.target.value)}
+          />
+        </Field>
+        <Field label="Notes">
+          <textarea
+            className={inputCls}
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+          />
+        </Field>
+        {notice && (
+          <p role="status" className="text-sm text-ink-soft">
+            {notice}
+          </p>
+        )}
+        <Button variant="cta" disabled={busy || closed}>
+          {closed
+            ? "Deadline passed"
+            : busy
+              ? "Saving…"
+              : saved
+                ? "Update submission"
+                : "Submit task"}
+        </Button>
+      </form>
+    </Card>
+  );
+}
+
+export function DashInterview() {
+  const { data, loading, error } = useDashboard();
+  if (loading || error || !data) return <DashboardState />;
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <Kicker>Interviews</Kicker>
+        <h1 className="font-display text-2xl font-bold">Your interview schedule</h1>
+      </div>
+      {!data.interviews.length && (
+        <Card className="p-8 text-center text-sm text-ink-soft">
+          No interview has been scheduled yet. You'll be notified when a time is assigned.
+        </Card>
+      )}
+      {data.interviews.map((item) => (
+        <Card key={item.id} className="p-6">
+          <div className="flex items-center justify-between">
+            <CalendarClock className="text-tekhelet" />
+            <StatusChip tone={item.status === "scheduled" ? "open" : "neutral"}>
+              {label(item.status)}
+            </StatusChip>
+          </div>
+          <h2 className="mt-4 font-display text-xl font-bold">
+            {new Date(item.scheduled_at).toLocaleString()}
+          </h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            {item.duration_minutes} minutes · {item.location || "Online"}
+          </p>
+          {item.meeting_url && item.status === "scheduled" && (
+            <Button href={item.meeting_url} target="_blank" variant="cta" className="mt-4">
+              Join meeting
+            </Button>
+          )}
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+export function DashResult() {
+  const { data, loading, error } = useDashboard();
+  if (loading || error || !data) return <DashboardState />;
+  const status = data.application?.status;
+  const selected = status === "selected";
+  return (
+    <div className="mx-auto max-w-2xl">
+      <Card className={`p-10 text-center ${selected ? "bg-indigo text-white" : ""}`}>
+        {selected && <PartyPopper className="mx-auto text-celadon" size={36} />}
+        <Kicker>{data.cycle?.name ?? "Recruitment"}</Kicker>
+        <h1 className="mt-4 font-display text-3xl font-bold">
+          {selected
+            ? "Welcome to PICT Robotics Club"
+            : status === "waitlisted"
+              ? "You are on the waitlist"
+              : status === "rejected"
+                ? "Not selected this time"
+                : status === "withdrawn"
+                  ? "Application withdrawn"
+                  : "Result pending"}
+        </h1>
+        <p className="mt-4 text-sm">
+          {selected
+            ? "Your recruitment result is confirmed. Check your updates for next steps."
+            : status === "rejected"
+              ? "Thank you for applying. We encourage you to keep building and apply in a future cycle."
+              : "Your latest application status will appear here as the team completes the process."}
+        </p>
+        <Button to="/dashboard/announcements" variant="cta" className="mt-6">
+          View updates
+        </Button>
+      </Card>
     </div>
   );
 }
 
 export function DashAnnouncements() {
-  const [items, setItems] = useState<Announcement[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getPublishedAnnouncements().then(setItems).catch(() => {}).finally(() => setLoading(false));
-  }, []);
-
+  const dashboard = useDashboard();
+  const announcements = useRemote(getPublishedAnnouncements);
+  const [notice, setNotice] = useState("");
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div><Kicker>Announcements</Kicker><h1 className="mt-1 font-display text-2xl font-bold">Recruitment updates</h1></div>
-      {loading && <p className="text-sm text-ink-soft">Loading…</p>}
-      <div className="space-y-3">
-        {items.map((a) => (
-          <Card key={a.id} className="p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h3 className="font-display font-semibold">{a.title}</h3>
-              <span className="text-xs text-ink-soft">{new Date(a.created_at).toLocaleDateString()}</span>
-            </div>
-            <p className="mt-1 text-sm text-ink-soft">{a.content}</p>
-          </Card>
-        ))}
-        {!loading && items.length === 0 && <Card className="p-5 text-center text-sm text-ink-soft">No announcements yet.</Card>}
+      <div className="flex items-center justify-between">
+        <div>
+          <Kicker>Updates</Kicker>
+          <h1 className="font-display text-2xl font-bold">Announcements &amp; notifications</h1>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={async () => {
+            try {
+              await markAllAsRead();
+              dashboard.refresh();
+            } catch (error) {
+              setNotice(authErrorMessage(error, "Unable to mark notifications read."));
+            }
+          }}
+        >
+          Mark all read
+        </Button>
       </div>
+      <DataState
+        loading={dashboard.loading || announcements.loading}
+        error={dashboard.error || announcements.error}
+        retry={() => {
+          dashboard.refresh();
+          announcements.refresh();
+        }}
+      />
+      {notice && (
+        <p role="alert" className="text-sm text-ink-soft">
+          {notice}
+        </p>
+      )}
+      <p className="text-sm text-ink-soft">
+        {dashboard.data?.notifications.filter((item) => !item.read).length ?? 0} unread in recent
+        notifications
+      </p>
+      {dashboard.data?.notifications.map((item) => (
+        <Card key={item.id} className={`p-5 ${item.read ? "" : "!border-tekhelet/40"}`}>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display font-semibold">{item.title}</h2>
+            {!item.read && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  try {
+                    await markAsRead(item.id);
+                    dashboard.refresh();
+                  } catch (error) {
+                    setNotice(authErrorMessage(error, "Unable to update notification."));
+                  }
+                }}
+              >
+                Mark read
+              </Button>
+            )}
+          </div>
+          <p className="mt-2 text-sm text-ink-soft">{item.message}</p>
+        </Card>
+      ))}
+      {announcements.data?.map((item) => (
+        <Card key={item.id} className="p-5">
+          <h2 className="font-display font-semibold">{item.title}</h2>
+          <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">{item.content}</p>
+        </Card>
+      ))}
+      {!announcements.loading &&
+        !announcements.data?.length &&
+        !dashboard.data?.notifications.length && (
+          <Card className="p-5 text-sm text-ink-soft">No updates yet.</Card>
+        )}
+    </div>
+  );
+}
+
+export function DashProfile() {
+  const dashboard = useDashboard();
+  if (dashboard.loading || dashboard.error || !dashboard.data) return <DashboardState />;
+  return (
+    <ProfileForm
+      key={dashboard.data.profile.id}
+      initial={dashboard.data.profile}
+      refresh={dashboard.refresh}
+    />
+  );
+}
+function ProfileForm({
+  initial,
+  refresh,
+}: {
+  initial: NonNullable<ReturnType<typeof useDashboard>["data"]>["profile"];
+  refresh: () => void;
+}) {
+  const [profile, setProfile] = useState<ProfileInput>({ ...initial });
+  const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
+  const files = useRemote(async () => {
+    const { data, error } = await supabase.storage.from("private-applicant-files").list(initial.id);
+    if (error) throw error;
+    return data ?? [];
+  });
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <Kicker>Applicant profile</Kicker>
+        <h1 className="font-display text-2xl font-bold">Your details</h1>
+      </div>
+      <Card className="p-6">
+        <form
+          className="grid gap-4 sm:grid-cols-2"
+          onSubmit={async (event) => {
+            event.preventDefault();
+            setBusy(true);
+            setNotice("");
+            try {
+              const { id, email, created_at, updated_at, profile_photo_url, ...permitted } =
+                profile as typeof initial;
+              await updateApplicantProfile(initial.id, permitted);
+              setNotice("Profile saved.");
+              refresh();
+            } catch (error) {
+              setNotice(authErrorMessage(error, "Unable to save your profile."));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {(
+            [
+              "full_name",
+              "phone",
+              "roll_number",
+              "branch",
+              "division",
+              "github_url",
+              "linkedin_url",
+              "portfolio_url",
+              "bio",
+            ] as const
+          ).map((key) => (
+            <Field label={label(key)} key={key}>
+              <input
+                className={inputCls}
+                type={key.endsWith("_url") ? "url" : "text"}
+                value={profile[key] ?? ""}
+                onChange={(event) => setProfile({ ...profile, [key]: event.target.value })}
+              />
+            </Field>
+          ))}
+          <Field label="Academic year">
+            <select
+              className={inputCls}
+              value={profile.year ?? "FY"}
+              onChange={(event) =>
+                setProfile({
+                  ...profile,
+                  year: event.target.value as "FY" | "SY",
+                })
+              }
+            >
+              <option>FY</option>
+              <option>SY</option>
+            </select>
+          </Field>
+          <div className="sm:col-span-2">
+            <p className="text-sm text-ink-soft">
+              Email: {initial.email}. Email changes must be confirmed through your account.
+            </p>
+            {notice && (
+              <p role="status" className="my-3 text-sm">
+                {notice}
+              </p>
+            )}
+            <Button disabled={busy} variant="cta">
+              {busy ? "Saving…" : "Save profile"}
+            </Button>
+          </div>
+        </form>
+      </Card>
+      <Card className="p-6">
+        <h2 className="font-display text-xl font-bold">Private documents</h2>
+        <p className="my-3 text-sm text-ink-soft">
+          Upload only documents the recruitment team asks for. PDF, JPG or PNG · 5 MB maximum.
+        </p>
+        <input
+          type="file"
+          accept="application/pdf,image/jpeg,image/png"
+          disabled={busy}
+          onChange={async (event) => {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            setBusy(true);
+            try {
+              await uploadPrivateDocument(file);
+              files.refresh();
+              setNotice("Document uploaded.");
+            } catch (error) {
+              setNotice(authErrorMessage(error, "Upload failed."));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+        <DataState loading={files.loading} error={files.error} retry={files.refresh} />
+        {files.data?.map((file) => (
+          <div key={file.id} className="mt-3 flex items-center justify-between text-sm">
+            <span>{file.name}</span>
+            <div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  try {
+                    window.open(
+                      await privateDocumentUrl(`${initial.id}/${file.name}`),
+                      "_blank",
+                      "noopener",
+                    );
+                  } catch (error) {
+                    setNotice(authErrorMessage(error, "Unable to open this document."));
+                  }
+                }}
+              >
+                Open
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={async () => {
+                  if (!confirm("Delete this document?")) return;
+                  const { error } = await supabase.storage
+                    .from("private-applicant-files")
+                    .remove([`${initial.id}/${file.name}`]);
+                  if (error) setNotice(authErrorMessage(error, "Unable to delete document."));
+                  else files.refresh();
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        ))}
+      </Card>
     </div>
   );
 }
