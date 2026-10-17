@@ -1,8 +1,20 @@
 # Implementation and verification report
 
-Date: 2026-10-17. Deployment repository: `nahArnav/PICT_Robotics`.
+Updated: 2026-10-18. Deployment repository: `nahArnav/PICT_Robotics`.
 
-## Current role/activity simplification
+## Read-notification deletion update
+
+Applicants can delete their own read notifications in Announcements & notifications; admins/super admins can do the same from the notification bell. Unread items expose Mark read instead. Every deletion asks for confirmation, failures remain visible with retry, and successful deletion persists across refresh/logout/login. Public announcements and underlying application/interview data are not affected.
+
+Migration 202610180001 adds one authenticated DELETE policy requiring ownership, read state and an active account. It contains no data-deletion statement. A private pre-release backup was saved under ignored `.backups/`; the reviewed migration is applied to hosted/local Supabase. Even admins and super admins cannot delete another account's notifications. Anonymous/banned attempts are denied, and independent member-message receipts prevent retries from resurrecting deleted notifications.
+
+Hosted postflight confirmed 17 migration versions, the exact owner/read/active-account policy and unchanged counts of 3 notifications, 13 profiles and 1 application. The read-only hosted RLS/staff-RPC smoke script passed. No real production notification was deleted during verification.
+
+Executed checks: **13 unit tests, 18 end-to-end tests (53.0 seconds), 96 database assertions across 17 migrations**, TypeScript and the environment-validated production build passed. New browser cases cover applicant/admin UI deletion, cancel, network-failure/retry, unread controls, reload/login persistence and cross-account API isolation.
+
+Read-only Auth inspection on 2026-10-18 reconfirmed Supabase Auth uses enabled custom Gmail SMTP (`smtp.gmail.com:465`) with email confirmation required; secrets were neither displayed nor changed. This sends Auth verification/recovery mail only. Member/interview updates remain in-app, not external emails. [NOTIFICATIONS_AND_INTERVIEWS.md](NOTIFICATIONS_AND_INTERVIEWS.md) documents the exact controls and scheduling steps.
+
+## Role/activity simplification (2026-10-17)
 
 The owner requested removal of the recruiter role and audit/activity feature. Only applicant, admin and super_admin remain supported. Admins perform all applicant reviews, interviews and evaluations without needing an assignment; optional reviewer assignments allocate work, not access. Only super admins can invite staff or manage account roles. The old PostgreSQL enum label is retained solely for history compatibility and blocked by constraints/RPCs.
 
@@ -49,10 +61,10 @@ React/Vite/Tailwind, branding, animation assets and existing public/portal route
 | Check | Result |
 | --- | --- |
 | `pnpm typecheck` | Passed: application and test/config TypeScript |
-| `pnpm test` | 10 unit tests passed |
-| `pnpm test:database` | All 16 migrations applied to a disposable network-isolated PostgreSQL 16 container; 87 workflow/security assertions passed |
+| `pnpm test` | 13 unit tests passed |
+| `pnpm test:database` | All 17 migrations applied to a disposable network-isolated PostgreSQL 16 container; 96 workflow/security assertions passed |
 | Local Supabase migrations | Applied successfully to the dedicated real Supabase PostgreSQL 17 stack |
-| `pnpm test:e2e` | Final full run: 16 tests passed in 48.9 seconds using local Auth/PostgREST/Storage and Chromium, including activity/role retirement and a valid legacy admin credential |
+| `pnpm test:e2e` | Final full run: 18 tests passed in 53.0 seconds using local Auth/PostgREST/Storage and Chromium, including read-notification deletion, activity/role retirement and a valid legacy admin credential |
 | `pnpm build:production` | Public environment guard, type/unit checks and build passed; large-chunk warning remains |
 | `pnpm peers check` | No peer dependency issues |
 | `git diff --check` | Passed |

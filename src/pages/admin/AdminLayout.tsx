@@ -25,6 +25,7 @@ import { isAdminRole, useAuthState, useInactivityLogout } from "../../lib/auth";
 import { getMyNotifications, markAllAsRead } from "../../lib/services/notifications";
 import { useRemote } from "../../lib/useRemote";
 import { AdminProvider, useAdminCycle } from "./context";
+import { NotificationActions } from "../../components/NotificationActions";
 
 const nav = [
   {
@@ -79,6 +80,7 @@ function AdminShell({ signOut }: { signOut: () => void }) {
   const [search, setSearch] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [notice, setNotice] = useState("");
+  const [notificationsBusy, setNotificationsBusy] = useState(false);
   const notifications = useRemote(getMyNotifications, [location.pathname]);
   const name = String(auth.user?.user_metadata.full_name || auth.user?.email || "Admin");
   const initials = name
@@ -172,27 +174,45 @@ function AdminShell({ signOut }: { signOut: () => void }) {
               )}
             </button>
             {showNotifications && (
-              <div className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-line bg-white p-4 shadow-lg">
+              <div
+                role="region"
+                aria-label="Notifications"
+                className="absolute right-0 top-full mt-2 max-h-[70vh] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-line bg-white p-4 shadow-lg"
+              >
                 <DataState loading={notifications.loading} error={notifications.error} />
                 <Button
                   size="sm"
                   variant="ghost"
+                  disabled={notificationsBusy || notifications.loading}
                   onClick={async () => {
+                    setNotificationsBusy(true);
+                    setNotice("");
                     try {
                       await markAllAsRead();
                       notifications.refresh();
                     } catch {
                       setNotice("Unable to mark notifications read.");
+                    } finally {
+                      setNotificationsBusy(false);
                     }
                   }}
                 >
                   Mark read
                 </Button>
-                {notice && <p className="text-sm">{notice}</p>}
+                {notice && (
+                  <p role="alert" className="text-sm">
+                    {notice}
+                  </p>
+                )}
                 {notifications.data?.slice(0, 5).map((item) => (
                   <div key={item.id} className="mt-2 border-t border-line py-2 text-sm">
                     <p className="font-semibold">{item.title}</p>
                     <p className="text-xs text-ink-soft">{item.message}</p>
+                    <NotificationActions
+                      notification={item}
+                      onChanged={notifications.refresh}
+                      disabled={notificationsBusy}
+                    />
                   </div>
                 ))}
                 {!notifications.data?.length && (

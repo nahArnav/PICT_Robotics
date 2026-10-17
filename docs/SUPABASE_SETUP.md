@@ -73,8 +73,9 @@ New implementation migrations, in order:
 | 202610170005 | Team, gallery, homepage CMS; preserve the existing public content |
 | 202610170006 | Token-specific invitation preview without exposing invitation lists/secrets |
 | 202610170007 | Serialized role management, safe audit metadata, question configuration and indexes |
-| 202610170009 | Retires recruiter and app activity logging; admin-only review, super-admin-only provisioning, private historical retention and independent notification retry receipts |
 | 202610170008 | Optional-answer/domain revalidation and banned-account enforcement for existing JWTs |
+| 202610170009 | Retires recruiter and app activity logging; admin-only review, super-admin-only provisioning, private historical retention and independent notification retry receipts |
+| 202610180001 | Enables deletion only of an active owner's read notifications; no automatic record deletion |
 
 The existing `202609260002_fix_audit_trigger.sql` is also retained. All repository migrations must have matching verified hosted history; deploying only the last file is insufficient. New content-preservation migrations copy claims already present in the frontend, not independently verified club statistics. Review those CMS entries before launch.
 

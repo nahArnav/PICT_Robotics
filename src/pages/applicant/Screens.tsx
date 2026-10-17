@@ -9,7 +9,8 @@ import { authErrorMessage, useAuthState } from "../../lib/auth";
 import { useRemote } from "../../lib/useRemote";
 import { supabase } from "../../lib/supabase";
 import { getPublishedAnnouncements } from "../../lib/services/announcements";
-import { markAsRead, markAllAsRead } from "../../lib/services/notifications";
+import { markAllAsRead } from "../../lib/services/notifications";
+import { NotificationActions } from "../../components/NotificationActions";
 import { updateApplicantProfile, type ProfileInput } from "../../lib/recruitment";
 import type { TaskRow, TaskSubmissionRow } from "../../lib/database";
 import { uploadPrivateDocument, privateDocumentUrl } from "../../lib/services/storage";
@@ -406,6 +407,7 @@ export function DashAnnouncements() {
   const dashboard = useDashboard();
   const announcements = useRemote(getPublishedAnnouncements);
   const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
@@ -416,12 +418,17 @@ export function DashAnnouncements() {
         <Button
           size="sm"
           variant="outline"
+          disabled={busy || dashboard.loading}
           onClick={async () => {
+            setBusy(true);
+            setNotice("");
             try {
               await markAllAsRead();
               dashboard.refresh();
             } catch (error) {
               setNotice(authErrorMessage(error, "Unable to mark notifications read."));
+            } finally {
+              setBusy(false);
             }
           }}
         >
@@ -447,24 +454,13 @@ export function DashAnnouncements() {
       </p>
       {dashboard.data?.notifications.map((item) => (
         <Card key={item.id} className={`p-5 ${item.read ? "" : "!border-tekhelet/40"}`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-display font-semibold">{item.title}</h2>
-            {!item.read && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={async () => {
-                  try {
-                    await markAsRead(item.id);
-                    dashboard.refresh();
-                  } catch (error) {
-                    setNotice(authErrorMessage(error, "Unable to update notification."));
-                  }
-                }}
-              >
-                Mark read
-              </Button>
-            )}
+            <NotificationActions
+              notification={item}
+              onChanged={dashboard.refresh}
+              disabled={busy}
+            />
           </div>
           <p className="mt-2 text-sm text-ink-soft">{item.message}</p>
         </Card>

@@ -40,4 +40,6 @@ Database tests create and remove their own disposable, network-isolated PostgreS
 
 Member messages deliver **in-app notifications**, not external email. Production Auth SMTP is configured; real inbox delivery still needs verification.
 
-See [Render deployment and admin operations](docs/RENDER_DEPLOYMENT.md), [Supabase setup](docs/SUPABASE_SETUP.md), [feature/security inventory](docs/backend-feature-inventory.md), and [verification report](docs/IMPLEMENTATION_REPORT.md). The 2026-10-17 hosted preflight verified the designated super admin and all 16 migrations are applied, including role/activity retirement. Consult the release report for frontend deployment status; local test completion alone does not prove a live release.
+See [notifications, mail and interview instructions](docs/NOTIFICATIONS_AND_INTERVIEWS.md) for deleting read notifications and scheduling shortlisted applicants.
+
+See [Render deployment and admin operations](docs/RENDER_DEPLOYMENT.md), [Supabase setup](docs/SUPABASE_SETUP.md), [feature/security inventory](docs/backend-feature-inventory.md), and [verification report](docs/IMPLEMENTATION_REPORT.md). The designated super admin is verified and all 17 migrations are applied, including role/activity retirement and owner-only read-notification deletion. Consult the release report for frontend deployment status; local test completion alone does not prove a live release.

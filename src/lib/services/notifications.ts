@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase } from "../supabase";
 
 export type Notification = {
   id: string;
@@ -14,9 +14,9 @@ export type Notification = {
 /** Fetch the current user's notifications, newest first. */
 export async function getMyNotifications(): Promise<Notification[]> {
   const { data, error } = await supabase
-    .from('notifications')
-    .select('*')
-    .order('created_at', { ascending: false })
+    .from("notifications")
+    .select("*")
+    .order("created_at", { ascending: false })
     .limit(50);
   if (error) throw error;
   return (data ?? []) as Notification[];
@@ -25,27 +25,35 @@ export async function getMyNotifications(): Promise<Notification[]> {
 /** Count unread notifications for the current user. */
 export async function getUnreadCount(): Promise<number> {
   const { count, error } = await supabase
-    .from('notifications')
-    .select('id', { count: 'exact', head: true })
-    .eq('read', false);
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("read", false);
   if (error) throw error;
   return count ?? 0;
 }
 
 /** Mark a single notification as read. */
 export async function markAsRead(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read: true })
-    .eq('id', id);
+  const { error } = await supabase.from("notifications").update({ read: true }).eq("id", id);
   if (error) throw error;
 }
 
 /** Mark all of the current user's notifications as read. */
 export async function markAllAsRead(): Promise<void> {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read: true })
-    .eq('read', false);
+  const { error } = await supabase.from("notifications").update({ read: true }).eq("read", false);
   if (error) throw error;
+}
+
+/** Delete one read notification. RLS enforces ownership and active-account access. */
+export async function deleteReadNotification(id: string): Promise<void> {
+  const { data, error } = await supabase
+    .from("notifications")
+    .delete()
+    .eq("id", id)
+    .eq("read", true)
+    .select("id")
+    .maybeSingle();
+  if (error) throw error;
+  if (!data)
+    throw new Error("Notification was not deleted. Mark it read first, or refresh and try again.");
 }
