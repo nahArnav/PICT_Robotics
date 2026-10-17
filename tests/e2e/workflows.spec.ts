@@ -28,7 +28,7 @@ function ok(result: { error: unknown }) {
 }
 async function login(page: Page, email: string, admin = false) {
   await page.goto(admin ? "/admin/login" : "/signin");
-  await page.getByLabel(admin ? "Admin email" : "PICT email").fill(email);
+  await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel(/^Password/).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(admin ? /\/admin$/ : /\/dashboard$/);
@@ -133,7 +133,7 @@ test("applicant and admin complete the real recruitment journey", async ({ page,
   page.on("pageerror", (error) => failures.push(error.message));
   await page.goto("/signup");
   await page.getByLabel("Full name").fill(`E2E Applicant ${tag}`);
-  await page.getByLabel("PICT email").fill(applicantEmail);
+  await page.getByLabel("Email", { exact: true }).fill(applicantEmail);
   await page.getByLabel(/^Password/).fill(password);
   await page.getByRole("button", { name: "Create account", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -215,17 +215,15 @@ test("applicant and admin complete the real recruitment journey", async ({ page,
     "https://github.com/example/task",
   );
   await page.goto("/dashboard/profile");
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "application-doc.pdf",
-      mimeType: "application/pdf",
-      buffer: Buffer.from("%PDF-1.4\nTest document"),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "application-doc.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4\nTest document"),
+  });
   await expect(page.getByText("Document uploaded.")).toBeVisible();
   await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin\/login$/);
-  await expect(page.getByRole("heading", { name: "Admin sign in" })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByRole("heading", { name: /Welcome back/ })).toBeVisible();
 
   const adminContext = await browser.newContext();
   const adminPage = await adminContext.newPage();

@@ -61,12 +61,13 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-    navigate("/admin/login", { replace: true });
+    navigate("/signin", { replace: true });
   }, [navigate]);
   useInactivityLogout(15 * 60 * 1000, signOut);
   if (!auth.ready) return <DataState loading />;
   if (auth.error) return <DataState error={auth.error} retry={() => window.location.reload()} />;
-  if (!auth.user || !isAdminRole(auth.role)) return <Navigate to="/admin/login" replace />;
+  if (auth.user && auth.role === "applicant") return <Navigate to="/dashboard" replace />;
+  if (!auth.user || !isAdminRole(auth.role)) return <Navigate to="/signin" replace />;
   return (
     <AdminProvider>
       <AdminShell signOut={signOut} />

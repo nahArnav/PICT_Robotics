@@ -1,19 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Button, Field, inputCls } from "../components/ui";
 import { Logo, SchematicVisual } from "../components/Logo";
 import { getCurrentRole, supabase } from "../lib/supabase";
-import { authErrorMessage, isAdminRole } from "../lib/auth";
+import { authErrorMessage, useAuthState } from "../lib/auth";
+import { invitationReturnPath, roleHomePath } from "../lib/roleRouting";
 
 export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
   const nav = useNavigate();
   const [params] = useSearchParams();
-  const invitationReturn = params.get("next");
-  const safeReturn =
-    invitationReturn && /^\/admin\/signup\?invite=[0-9a-f-]{36}$/i.test(invitationReturn)
-      ? invitationReturn
-      : null;
+  const safeReturn = invitationReturnPath(params.get("next"));
+  const auth = useAuthState();
   const [step, setStep] = useState<"form" | "verify">("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +19,20 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const isSignup = mode === "signup";
+  const home = roleHomePath(auth.role);
+  if (!isSignup && auth.ready && auth.session && home)
+    return <Navigate to={safeReturn ?? home} replace />;
+
+  async function openAccount() {
+    const destination = roleHomePath(await getCurrentRole());
+    if (!destination) {
+      await supabase.auth.signOut();
+      throw new Error(
+        "Your account is not ready yet. Please try again after verifying your email.",
+      );
+    }
+    nav(safeReturn ?? destination, { replace: true });
+  }
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -39,8 +51,8 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
               Break. Improve.
             </h2>
             <p className="mt-3 max-w-sm text-white/60">
-              One account for your entire recruitment journey — application, tasks, interview and
-              result.
+              One secure sign in for applicants and the club team. Your account permissions open the
+              right dashboard automatically.
             </p>
           </div>
         </div>
@@ -60,7 +72,7 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
               <p className="mt-2 text-sm text-ink-soft">
                 {isSignup
                   ? "Use your PICT email to get started."
-                  : "Welcome back. Continue your recruitment."}
+                  : "Applicants and club staff sign in here. We’ll open your account’s dashboard."}
               </p>
               <form
                 className="mt-8 space-y-4"
@@ -79,7 +91,7 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
                         },
                       });
                       if (signUpError) throw signUpError;
-                      if (data.session) nav("/dashboard", { replace: true });
+                      if (data.session) await openAccount();
                       else setStep("verify");
                     } else {
                       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -87,22 +99,7 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
                         password,
                       });
                       if (signInError) throw signInError;
-                      if (safeReturn) {
-                        nav(safeReturn, { replace: true });
-                        return;
-                      }
-                      const role = await getCurrentRole();
-                      if (isAdminRole(role)) {
-                        nav("/admin", { replace: true });
-                        return;
-                      }
-                      if (role !== "applicant") {
-                        await supabase.auth.signOut();
-                        throw new Error(
-                          "Your account is not ready yet. Please try again after verifying your email.",
-                        );
-                      }
-                      nav("/dashboard", { replace: true });
+                      await openAccount();
                     }
                   } catch (err) {
                     setError(authErrorMessage(err, "Unable to continue."));
@@ -122,10 +119,11 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
                     />
                   </Field>
                 )}
-                <Field label="PICT email" required>
+                <Field label="Email" required>
                   <input
                     required
                     type="email"
+                    autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={inputCls}
@@ -137,6 +135,7 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
                     required
                     minLength={8}
                     type="password"
+                    autoComplete={isSignup ? "new-password" : "current-password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={inputCls}
@@ -144,7 +143,10 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
                   />
                 </Field>
                 {error && (
-                  <p className="rounded-lg border border-[#f3c0c0] bg-[#fbe9e9]/60 px-3 py-2 text-sm text-[#a13939]">
+                  <p
+                    role="alert"
+                    className="rounded-lg border border-[#f3c0c0] bg-[#fbe9e9]/60 px-3 py-2 text-sm text-[#a13939]"
+                  >
                     {error}
                   </p>
                 )}
@@ -153,6 +155,12 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
                   <ArrowRight size={16} />
                 </Button>
               </form>
+              {isSignup && (
+                <p className="mt-4 text-sm text-ink-soft">
+                  New accounts receive applicant access only. Staff access must be granted by an
+                  authorized administrator.
+                </p>
+              )}
               {!isSignup && (
                 <Link to="/forgot-password" className="mt-4 block text-sm text-tekhelet">
                   Forgot password?

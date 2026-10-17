@@ -195,8 +195,8 @@ export function AdminSignup() {
             </p>
           )}
           <p className="mt-5 text-center text-sm">
-            <Link to="/admin/login" className="font-semibold text-tekhelet">
-              Admin sign in
+            <Link to="/signin" className="font-semibold text-tekhelet">
+              Return to sign in
             </Link>
           </p>
         </div>

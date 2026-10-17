@@ -183,8 +183,8 @@ function Footer() {
         <div className="mt-12 flex flex-col justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row">
           <span>© 2026 PICT Robotics Club. Pune Institute of Computer Technology.</span>
           <span className="flex items-center gap-4">
-            <NavLink to="/admin/login" className="transition-colors hover:text-celadon">
-              Admin Console
+            <NavLink to="/signin" className="transition-colors hover:text-celadon">
+              Club portal
             </NavLink>
             <span className="label text-[10px]">Robots · People · A Brighter Tomorrow</span>
           </span>

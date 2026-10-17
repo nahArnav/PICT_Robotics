@@ -15,6 +15,7 @@ import { DashboardProvider, useDashboard } from "./context";
 import { useAuthState, useInactivityLogout, refreshAuth } from "../../lib/auth";
 import { DataState } from "../../components/DataState";
 import { supabase } from "../../lib/supabase";
+import { roleHomePath } from "../../lib/roleRouting";
 
 const nav = [
   { to: "/dashboard", label: "Overview", icon: LayoutGrid, end: true },
@@ -39,6 +40,7 @@ export function DashboardLayout() {
 
   if (!auth.ready) return <DataState loading />;
   if (auth.error) return <DataState error={auth.error} retry={() => void refreshAuth()} />;
+  if (auth.session && roleHomePath(auth.role) === "/admin") return <Navigate to="/admin" replace />;
   if (!auth.session || auth.role !== "applicant") return <Navigate to="/signin" replace />;
   return (
     <DashboardProvider>

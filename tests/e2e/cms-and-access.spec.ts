@@ -16,7 +16,7 @@ function ok(result: { error: unknown }) {
 }
 async function login(page: Page) {
   await page.goto("/admin/login");
-  await page.getByLabel("Admin email").fill(email);
+  await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/admin$/);
@@ -257,7 +257,7 @@ test("password recovery email and private document storage work locally", async 
   await page.getByLabel("New password").fill(nextPassword);
   await page.getByRole("button", { name: "Save password" }).click();
   await expect(page).toHaveURL(/\/signin$/);
-  await page.getByLabel("PICT email").fill(accountEmail);
+  await page.getByLabel("Email", { exact: true }).fill(accountEmail);
   await page.getByLabel("Password").fill(nextPassword);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -286,7 +286,7 @@ test("password recovery email and private document storage work locally", async 
 test("mobile navigation, anonymous route protection and network retry work", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin\/login$/);
+  await expect(page).toHaveURL(/\/signin$/);
   await login(page);
   await page.getByRole("link", { name: "Events", exact: true }).click();
   await expect(page).toHaveURL(/\/admin\/events$/);

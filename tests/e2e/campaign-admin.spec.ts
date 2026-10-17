@@ -46,7 +46,7 @@ test("regular admin creates, opens and closes recruitment while existing drafts 
   browser,
 }) => {
   await page.goto("/admin/login");
-  await page.getByLabel("Admin email").fill(adminEmail);
+  await page.getByLabel("Email", { exact: true }).fill(adminEmail);
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(page).toHaveURL(/\/admin$/);
@@ -84,7 +84,7 @@ test("regular admin creates, opens and closes recruitment while existing drafts 
   const applicantContext = await browser.newContext();
   const applicant = await applicantContext.newPage();
   await applicant.goto("/signin");
-  await applicant.getByLabel("PICT email").fill(applicantEmail);
+  await applicant.getByLabel("Email", { exact: true }).fill(applicantEmail);
   await applicant.getByLabel("Password", { exact: true }).fill(password);
   await applicant.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(applicant).toHaveURL(/\/dashboard$/);
