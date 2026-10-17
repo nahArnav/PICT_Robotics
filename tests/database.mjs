@@ -58,6 +58,8 @@ try {
     .filter((file) => file.endsWith(".sql"))
     .sort()) {
     console.log(`Applying ${file}`);
+    if (file === "202610170009_simplify_roles_remove_activity.sql")
+      sql(readFileSync(new URL("./sql/retirement-upgrade-fixture.sql", import.meta.url), "utf8"));
     sql(readFileSync(resolve("supabase/migrations", file), "utf8"));
   }
   sql(readFileSync(new URL("./sql/workflows.sql", import.meta.url), "utf8"));

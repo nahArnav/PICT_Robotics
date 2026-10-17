@@ -11,11 +11,11 @@ end; $$;
 insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values
  ('00000000-0000-0000-0000-000000000001','one@test.local',now(),'{"full_name":"Applicant One","role":"super_admin"}'),
  ('00000000-0000-0000-0000-000000000002','two@test.local',now(),'{"full_name":"Applicant Two"}'),
- ('00000000-0000-0000-0000-000000000003','recruiter@test.local',now(),'{}'),
+ ('00000000-0000-0000-0000-000000000003','review-admin@test.local',now(),'{}'),
  ('00000000-0000-0000-0000-000000000004','admin@test.local',now(),'{}'),
  ('00000000-0000-0000-0000-000000000005','super@test.local',now(),'{}'),
  ('00000000-0000-0000-0000-000000000006','invite@test.local',now(),'{}');
-update public.user_roles set role='recruiter' where user_id='00000000-0000-0000-0000-000000000003';
+update public.user_roles set role='admin' where user_id='00000000-0000-0000-0000-000000000003';
 update public.user_roles set role='admin' where user_id='00000000-0000-0000-0000-000000000004';
 update public.user_roles set role='super_admin' where user_id='00000000-0000-0000-0000-000000000005';
 insert into public.recruitment_cycles(id,name,academic_year,target_batch,application_open,application_close,status)
@@ -55,8 +55,8 @@ select public.test_assert((select count(*)=0 from public.applications),'cross-ap
 select public.test_assert((select count(*)=0 from public.notifications),'cross-applicant notification isolation');
 select public.test_assert((select count(*)=0 from public.evaluations),'applicant evaluations private');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
-select public.test_assert((select count(*)=0 from public.applications),'unassigned recruiter denied');
-select public.test_denied($$select public.set_user_role('00000000-0000-0000-0000-000000000002','admin')$$,'recruiter super admin operation denied');
+select public.test_assert((select count(*)=1 from public.applications),'admin reviews applications without an assignment');
+select public.test_denied($$select public.set_user_role('00000000-0000-0000-0000-000000000002','admin')$$,'review admin cannot grant roles');
 
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000004',false);
 select public.test_denied($$select public.create_admin_invite('intruder@test.local','super_admin')$$,'admin cannot invite super admin');
@@ -69,10 +69,10 @@ select public.update_application_status(:'app_id','shortlisted');
 select id as interview_id from public.schedule_interview(:'app_id',now()+interval '1 hour','00000000-0000-0000-0000-000000000003') \gset
 select public.test_denied(format('select public.schedule_interview(%L, now()+interval ''1 hour'', ''00000000-0000-0000-0000-000000000003'')', :'app_id'),'interviewer double booking rejected');
 insert into public.achievements(title,description,year,published) values('Published result','actual',2026,true),('Private draft','private',2026,false);
-select public.test_assert((select count(*)=0 from public.audit_logs),'audit logs restricted to super admin');
+select public.test_denied($$select count(*) from public.audit_logs$$,'retained activity archive is not an admin feature');
 
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
-select public.test_assert((select count(*)=1 from public.applications),'assigned recruiter sees record');
+select public.test_assert((select count(*)=1 from public.applications),'admin performs reviewer duties');
 insert into public.evaluations(application_id,evaluator_id,technical_score,overall_score) values(:'app_id',auth.uid(),8,40);
 select public.test_denied(format('insert into public.evaluations(application_id,evaluator_id,technical_score) values(%L,auth.uid(),99)', :'app_id'),'invalid evaluation score rejected');
 insert into public.application_notes(application_id,body) values(:'app_id','Private observation');
@@ -90,7 +90,9 @@ select public.test_assert((select count(*)=0 from storage.objects),'cross-user p
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000005',false);
 select token as invite_token,id as invite_id from public.create_admin_invite('invite@test.local','admin') \gset
 select public.test_assert((select bool_and(token is null and length(token_hash)=64) from public.admin_invites),'only hashed invitation secrets stored');
-select public.test_assert((select count(*)>0 from public.audit_logs),'sensitive operations audited');
+select public.test_denied($$select count(*) from public.audit_logs$$,'activity archive hidden even from super-admin API');
+select public.test_denied($$select public.create_admin_invite('retired@test.local','recruiter')$$,'retired role invitation denied');
+select public.test_denied($$select public.set_user_role('00000000-0000-0000-0000-000000000002','recruiter')$$,'retired role assignment denied');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
 select public.test_denied(format('select public.accept_admin_invite(%L)', :'invite_token'),'wrong email invitation rejected');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000006',false);
@@ -98,7 +100,7 @@ select public.accept_admin_invite(:'invite_token');
 select public.test_assert(public.current_role()='admin','matching verified invite grants intended role');
 select public.test_denied(format('select public.accept_admin_invite(%L)', :'invite_token'),'invitation reuse rejected');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000005',false);
-select token as revoked_token,id as revoked_id from public.create_admin_invite('two@test.local','recruiter') \gset
+select token as revoked_token,id as revoked_id from public.create_admin_invite('two@test.local','admin') \gset
 select public.revoke_admin_invite(:'revoked_id');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
 select public.test_denied(format('select public.accept_admin_invite(%L)', :'revoked_token'),'revoked invitation rejected');
@@ -108,7 +110,7 @@ update public.recruitment_cycles set application_close=now()-interval '1 second'
 update public.user_roles set role='applicant' where user_id='00000000-0000-0000-0000-000000000003';
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000003',false);
-select public.test_assert((select count(*)=0 from public.applications),'revoked recruiter loses assignments immediately');
+select public.test_assert((select count(*)=0 from public.applications),'revoked admin loses reviewer access immediately');
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
 select public.test_denied($$select public.save_application_draft('10000000-0000-0000-0000-000000000001','late','','','',array[]::uuid[])$$,'backend deadline enforced');
 reset role;
@@ -183,7 +185,7 @@ select public.test_denied(format('select public.submit_task(''40000000-0000-0000
 
 -- Expired, unverified and no-longer-authorised invitations must never grant roles.
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000005',false);
-select token as expired_token,id as expired_id from public.create_admin_invite('two@test.local','recruiter') \gset
+select token as expired_token,id as expired_id from public.create_admin_invite('two@test.local','admin') \gset
 reset role;
 update public.admin_invites set expires_at=now()-interval '1 second' where id=:'expired_id';
 set role authenticated;
@@ -193,7 +195,7 @@ reset role;
 insert into auth.users(id,email) values('00000000-0000-0000-0000-000000000007','unverified@test.local');
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000005',false);
-select token as unverified_token from public.create_admin_invite('unverified@test.local','recruiter') \gset
+select token as unverified_token from public.create_admin_invite('unverified@test.local','admin') \gset
 select token as demoted_token from public.create_admin_invite('two@test.local','admin') \gset
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000007',false);
 select public.test_denied(format('select public.accept_admin_invite(%L)', :'unverified_token'),'unverified invitation rejected');
@@ -219,3 +221,15 @@ select public.test_assert((select count(*)=0 from public.my_interviews()),'banne
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000004',false);
 select public.test_denied($$select public.dashboard_metrics()$$,'banned admin JWT cannot use privileged RPC');
 select public.test_denied($$insert into public.projects(title,description,year) values('Attack','x',2026)$$,'banned admin JWT cannot write CMS');
+
+-- Retirement is enforced in the database, not just hidden in the role dropdown.
+reset role;
+select public.test_assert((select count(*) from public.audit_logs)=(select retained_count from public.test_retirement_snapshot),'historical activity retained with no new activity generated');
+select public.test_assert((select revoked_at is not null from public.admin_invites where id='88888888-0000-4000-8000-000000000002'),'legacy recruiter invitation revoked without deletion');
+select public.test_denied($$insert into public.user_roles(user_id,role) values('00000000-0000-0000-0000-000000000002','recruiter')$$,'retired role blocked even through direct database writes');
+set role authenticated;
+select set_config('request.jwt.claim.sub','88888888-0000-4000-8000-000000000001',false);
+select public.test_assert(not exists(select 1 from public.inspect_admin_invite('88888888-0000-4000-8000-000000000003')),'retired invitation cannot be inspected or accepted');
+select public.test_denied($$select public.accept_admin_invite('88888888-0000-4000-8000-000000000003')$$,'retired invitation acceptance blocked');
+select public.test_assert(public.send_member_notifications(array['00000000-0000-0000-0000-000000000002'::uuid],'Old request','Retry','88888888-0000-4000-8000-000000000005')=0,'historical notification retry remains idempotent after activity removal');
+select public.test_denied($$select * from public.member_notification_receipts$$,'notification retry receipts are not a readable activity feed');

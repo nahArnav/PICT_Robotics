@@ -1,15 +1,15 @@
 -- TRUSTED SUPABASE SQL EDITOR ONLY. Never run this from a browser client.
 -- Explicit operator action; not a migration and never executed automatically.
--- Prefer Admin > Settings > User roles for audited, serialized role changes.
+-- Prefer Admin > Settings > User roles for serialized role changes.
 -- This script only ADDS a staff role; it does not demote anyone or delete roles.
 begin;
 do $$
 declare
   account_email text := 'REPLACE_WITH_YOUR_VERIFIED_EMAIL';
-  requested_role public.app_role := 'admin'; -- recruiter, admin or super_admin
+  requested_role public.app_role := 'admin'; -- admin or super_admin
   account_id uuid;
 begin
-  if requested_role not in ('recruiter', 'admin', 'super_admin') then
+  if requested_role not in ('admin', 'super_admin') then
     raise exception 'Choose an explicit staff role';
   end if;
   select id into account_id from auth.users
