@@ -11,7 +11,7 @@ const tag = Date.now();
 const password = `Role-${tag}-Test!`;
 // Sign-in must accept a valid older credential even if signup now asks for eight characters.
 const legacyPassword = "Old7!x";
-const roles = ["applicant", "recruiter", "admin", "super_admin"] as const;
+const roles = ["applicant", "admin", "super_admin"] as const;
 const users = new Map<string, { id: string; email: string }>();
 function ok(result: { error: unknown }) {
   if (result.error) throw result.error;
@@ -59,9 +59,37 @@ for (const role of roles) {
     await expect(page).toHaveURL(home);
     await page.goto(role === "applicant" ? "/admin/events" : "/dashboard/profile");
     await expect(page).toHaveURL(home);
-    if (role === "recruiter") {
+    if (role === "admin") {
       await page.goto("/admin/events");
+      await expect(page.getByLabel("Title", { exact: true })).toBeVisible();
+      await page.goto("/admin/settings");
       await expect(page.getByText("You do not have permission to access this page.")).toBeVisible();
+      const client = createClient(config.API_URL, config.ANON_KEY, {
+        auth: { persistSession: false },
+      });
+      ok(
+        await client.auth.signInWithPassword({
+          email: users.get(role)!.email,
+          password: legacyPassword,
+        }),
+      );
+      expect(
+        (
+          await client.rpc("create_admin_invite", {
+            p_email: "unauthorized@example.com",
+            p_role: "admin",
+          })
+        ).error,
+      ).toBeTruthy();
+      expect(
+        (
+          await client.rpc("set_user_role", {
+            p_user_id: users.get("applicant")!.id,
+            p_role: "admin",
+          })
+        ).error,
+      ).toBeTruthy();
+      await client.auth.signOut();
     }
     if (role === "applicant") {
       const current = await service

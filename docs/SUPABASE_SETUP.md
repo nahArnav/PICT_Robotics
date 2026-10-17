@@ -43,7 +43,7 @@ In the **intended hosted project's** SQL editor, run `supabase/manual/verify-sup
 - If it returns no account, create the account through normal Auth and verify its email first. Do not invent an Auth user UUID or manually insert password data.
 - Adding `role` to Auth user metadata does not grant privileges. Application authorization reads `public.user_roles`.
 
-After the first super admin is established, prefer `/admin/settings`: create invitations, revoke unused invites, or change a registered user's role. Admins may invite recruiters only. Super admins may invite any staff role and manage roles. Self-demotion is blocked; another super admin must perform it. SQL-editor operators can bypass these application safeguards and must not remove the last super admin.
+After the first super admin is established, use `/admin/settings` as a super admin to create/revoke staff invitations or change account roles. Supported roles are applicant, admin and super_admin; admins perform all recruitment-review duties. Only super admins provision staff or manage roles. Self-demotion is blocked; another super admin must perform it. SQL-editor operators can bypass application safeguards and must not remove the last super admin.
 
 ## 3. Inspect hosted history before applying migrations
 
@@ -73,6 +73,7 @@ New implementation migrations, in order:
 | 202610170005 | Team, gallery, homepage CMS; preserve the existing public content |
 | 202610170006 | Token-specific invitation preview without exposing invitation lists/secrets |
 | 202610170007 | Serialized role management, safe audit metadata, question configuration and indexes |
+| 202610170009 | Retires recruiter and app activity logging; admin-only review, super-admin-only provisioning, private historical retention and independent notification retry receipts |
 | 202610170008 | Optional-answer/domain revalidation and banned-account enforcement for existing JWTs |
 
 The existing `202609260002_fix_audit_trigger.sql` is also retained. All repository migrations must have matching verified hosted history; deploying only the last file is insufficient. New content-preservation migrations copy claims already present in the frontend, not independently verified club statistics. Review those CMS entries before launch.
@@ -142,10 +143,10 @@ Use controlled test accounts in a deliberately created test campaign, not real a
 1. Confirm migrations/history and RLS are current, verify the super-admin account, then log in at `/admin/login`.
 2. Create an open campaign with future closing date, active domains and valid questions/options. Archive expired campaigns rather than pretending they are open. Do not delete campaigns/questions with historical applications.
 3. Register a separate applicant, complete real email verification, save a draft, refresh, submit, and sign out/in. Verify the persisted application.
-4. Invite a separate recruiter; verify acceptance and denied access to unrelated settings/content. Assign the applicant; then verify review access and immediate loss of backend access when unassigned/revoked.
+4. Invite a separate admin; verify acceptance, review/interview/evaluation access, and denied access to super-admin settings/role grants. Demote the account and verify backend review access disappears immediately; reviewer assignment alone must not grant access.
 5. Review → shortlist → schedule → evaluate → select/waitlist/reject; confirm applicant-safe interview details, result and notifications. Check the selected campaign filter.
 6. Publish/unpublish a clearly labeled CMS test entry and verify public visibility; clean up only that entry. Test public image and private document permissions with separate users.
 7. Exercise password reset through a real inbox. Verify browser refresh on deep links and a mobile viewport.
-8. Confirm audit activity, no service credentials in the browser bundle, and errors when making direct unauthorized database requests.
+8. Confirm no audit/activity feed or recruiter option exists, retired roles cannot be granted by direct API requests, no new app audit entries appear and no service credentials enter the browser bundle. Historical activity stays private; notification retries remain idempotent.
 
 Local automated tests do not replace this hosted launch check. Production backups, traffic/load testing, email delivery and deployment-domain behavior remain operator responsibilities.

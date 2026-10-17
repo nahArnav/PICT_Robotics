@@ -24,7 +24,7 @@ The rewrite is necessary for opening or refreshing `/admin/login`, `/dashboard/*
 ## Safe release order
 
 1. Confirm hosted Supabase history and existing super-admin identity; back up public schema/records privately. Never commit backups or secrets.
-2. Review `supabase db push --dry-run --linked --skip-vault`. Apply only the eight new completion migrations, without reset or vault synchronization. Verify all 15 versions and preserved records afterward.
+2. Review `supabase db push --dry-run --linked --skip-vault`. Apply only the intended pending migrations, without reset or vault synchronization. The initial completion release has 15 versions; the role/activity retirement adds version 202610170009. Verify all 16 versions and preserved records afterward.
 3. Confirm production Auth Site URL/redirects point at this HTTPS origin. Real email confirmation/recovery needs working Auth email delivery; preserve existing provider secrets and never push the local test Auth config to production.
 4. Run type/unit/database/local end-to-end/build verification. The campaign test uses a regular admin, not just a super admin, to create/open/close recruitment and verifies an applicant can proceed only inside that window.
 5. Commit/push reviewed source to `main` and deploy that exact revision on the existing Render service. Do not include `.DS_Store`, `.backups/`, `.env.local`, local runtime metadata or test reports.
@@ -38,7 +38,7 @@ Everyone signs in at https://pict-robotics.onrender.com/signin. The trusted data
 - **Events:** Admin → Events. Create title, summary, details, category, dates, venue, registration URL and optional image. Select `published` to display it publicly; draft stays private. Edit/delete controls persist changes subject to linked-record safeguards.
 - **Website content:** Admin → Content for achievements, projects, team, gallery and homepage highlights. Publishing/unpublishing controls public visibility.
 - **Applications:** Search/filter, open an applicant, assign/remove reviewers, add internal notes and move through allowed review stages. Shortlist before scheduling an interview. Save evaluations and explicitly set final results.
-- **Access:** Settings manages invitations. Admins may invite recruiters; super admins manage administrative roles and audit history. A new admin account cannot self-select privileges.
+- **Access:** Only super admins see Settings and manage staff invitations/account roles. Admins perform all recruitment reviews and interviews; there is no recruiter role or activity screen. New accounts cannot self-select staff privileges.
 
 An applicant's Continue button is intentionally disabled without a date-valid open campaign. Profile editing remains available independently. Local port-5173 accounts/data are separate from production; a local applicant account does not inherit the hosted account's super-admin role.
 

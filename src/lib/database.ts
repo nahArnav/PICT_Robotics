@@ -8,7 +8,7 @@ export type Json =
     }
   | Json[];
 
-export type AppRole = "applicant" | "recruiter" | "admin" | "super_admin";
+export type AppRole = "applicant" | "admin" | "super_admin";
 export type ApplicationStatus =
   | "draft"
   | "submitted"
@@ -270,15 +270,6 @@ export type Database = {
         created_by: string | null;
         created_at: string;
         updated_at: string;
-      }>;
-      audit_logs: Table<{
-        id: string;
-        actor_id: string | null;
-        action: string;
-        entity_type: string;
-        entity_id: string | null;
-        metadata: Json;
-        created_at: string;
       }>;
       application_reviewer_assignments: Table<{
         id: string;

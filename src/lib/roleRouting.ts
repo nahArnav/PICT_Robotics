@@ -3,7 +3,7 @@ import type { AppRole } from "./database";
 // Navigation is only presentation. Database RLS/RPC checks remain authoritative.
 export function roleHomePath(role: AppRole | null): "/admin" | "/dashboard" | null {
   if (role === "applicant") return "/dashboard";
-  if (role === "admin" || role === "super_admin" || role === "recruiter") return "/admin";
+  if (role === "admin" || role === "super_admin") return "/admin";
   return null;
 }
 

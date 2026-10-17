@@ -32,22 +32,19 @@ const nav = [
     label: "Overview",
     icon: LayoutGrid,
     end: true,
-    review: true,
   },
-  { to: "/admin/applicants", label: "Applicants", icon: Users, review: true },
+  { to: "/admin/applicants", label: "Applicants", icon: Users },
   { to: "/admin/recruitment", label: "Recruitment", icon: GitBranch },
   { to: "/admin/tasks", label: "Tasks", icon: ListChecks },
   {
     to: "/admin/interviews",
     label: "Interviews",
     icon: CalendarClock,
-    review: true,
   },
   {
     to: "/admin/evaluations",
     label: "Evaluations",
     icon: ClipboardCheck,
-    review: true,
   },
   { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { to: "/admin/events", label: "Events", icon: CalendarDays },
@@ -89,9 +86,8 @@ function AdminShell({ signOut }: { signOut: () => void }) {
     .map((part) => part[0])
     .slice(0, 2)
     .join("");
-  const links = nav.filter((item) => auth.role !== "recruiter" || item.review);
-  const permitted =
-    auth.role !== "recruiter" || links.some((item) => item.to === location.pathname);
+  const links = nav.filter((item) => item.to !== "/admin/settings" || auth.role === "super_admin");
+  const permitted = location.pathname !== "/admin/settings" || auth.role === "super_admin";
   return (
     <div className="min-h-screen bg-paper-2/40 lg:grid lg:grid-cols-[240px_1fr]">
       <aside className="sticky top-0 hidden h-screen flex-col border-r border-line bg-indigo p-4 text-white lg:flex">

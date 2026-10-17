@@ -176,14 +176,14 @@ test("new and existing users accept invitation links through the UI", async ({ p
   await page.goto("/admin/settings");
   const invitedEmail = `invited-${tag}@example.com`;
   await page.getByLabel("Invited email").fill(invitedEmail);
-  await page.getByLabel("Role", { exact: true }).selectOption("recruiter");
+  await page.getByLabel("Role", { exact: true }).selectOption("admin");
   await page.getByRole("button", { name: "Create invite" }).click();
   await expect(page.getByLabel("Invitation link")).toBeVisible();
   const link = await page.getByLabel("Invitation link").inputValue();
   const context = await browser.newContext();
   const invited = await context.newPage();
   await invited.goto(link);
-  await invited.getByLabel("Full name").fill("Invited Recruiter");
+  await invited.getByLabel("Full name").fill("Invited Admin");
   await invited.getByLabel("Password").fill(password);
   await invited.getByRole("button", { name: "Create authorised account" }).click();
   await expect(invited).toHaveURL(/\/admin$/);
@@ -212,6 +212,41 @@ test("new and existing users accept invitation links through the UI", async ({ p
   await existingPage.getByRole("button", { name: "Sign in and accept" }).click();
   await expect(existingPage).toHaveURL(/\/admin$/);
   await existingContext.close();
+});
+
+test("staff settings have no activity feed or recruiter option, including direct API access", async ({
+  page,
+}) => {
+  const activityRequests: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/rest/v1/audit_logs")
+      activityRequests.push(request.url());
+  });
+  await login(page);
+  await page.goto("/admin/settings");
+  await expect(page.getByRole("heading", { name: "User roles", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Audit activity", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("option", { name: "recruiter", exact: true })).toHaveCount(0);
+  const authenticated = createClient(config.API_URL, config.ANON_KEY, {
+    auth: { persistSession: false },
+  });
+  ok(await authenticated.auth.signInWithPassword({ email, password }));
+  expect((await authenticated.from("audit_logs").select("*")).error).toBeTruthy();
+  expect(
+    (
+      await authenticated.rpc("create_admin_invite", {
+        p_email: `retired-${tag}@example.com`,
+        p_role: "recruiter",
+      })
+    ).error,
+  ).toBeTruthy();
+  expect(
+    (await authenticated.rpc("set_user_role", { p_user_id: userId, p_role: "recruiter" })).error,
+  ).toBeTruthy();
+  await page.getByLabel("Find user email").fill(email);
+  await expect(page.getByLabel(`Role for ${email}`, { exact: true })).toBeVisible();
+  expect(activityRequests).toEqual([]);
+  await authenticated.auth.signOut();
 });
 
 test("password recovery email and private document storage work locally", async ({ page }) => {

@@ -311,7 +311,7 @@ test("direct API requests cannot bypass user permissions", async () => {
   ok(await admin.auth.signInWithPassword({ email: adminEmail, password }));
   const invitation = await admin.rpc("create_admin_invite", {
     p_email: applicantEmail,
-    p_role: "recruiter",
+    p_role: "admin",
   });
   ok(invitation);
   const token = invitation.data[0].token;

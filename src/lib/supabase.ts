@@ -34,11 +34,13 @@ export async function getCurrentRole(): Promise<AppRole | null> {
   const rank: Record<AppRole, number> = {
     super_admin: 4,
     admin: 3,
-    recruiter: 2,
     applicant: 1,
   };
   return (
-    (data ?? []).map((row) => row.role as AppRole).sort((a, b) => rank[b] - rank[a])[0] ?? null
+    (data ?? [])
+      .map((row) => row.role)
+      .filter((role) => Object.prototype.hasOwnProperty.call(rank, role))
+      .sort((a, b) => rank[b] - rank[a])[0] ?? null
   );
 }
 

@@ -471,7 +471,6 @@ function ApplicantDrawer({
   const staff = useRemote(getStaff);
   const auth = useAuthState();
   const documents = useRemote(async () => {
-    if (auth.role === "recruiter") return [];
     const { data, error } = await supabase.storage
       .from("private-applicant-files")
       .list(a.applicant_id);
@@ -573,126 +572,128 @@ function ApplicantDrawer({
                   )}
                 </div>
               </Card>
-              {auth.role !== "recruiter" && (
-                <>
-                  <Card className="space-y-3 p-5">
-                    <h3 className="font-semibold">Assign a reviewer</h3>
-                    <DataState loading={staff.loading} error={staff.error} retry={staff.refresh} />
-                    <select
-                      aria-label="Reviewer"
-                      className={inputCls}
-                      value={reviewer}
-                      onChange={(event) => setReviewer(event.target.value)}
-                    >
-                      <option value="">Select reviewer</option>
-                      {staff.data?.map((person) => (
-                        <option key={person.id} value={person.id}>
-                          {person.full_name || person.email}
-                        </option>
-                      ))}
-                    </select>
-                    <Button
-                      variant="outline"
-                      disabled={!reviewer || busy}
-                      onClick={async () => {
-                        setBusy(true);
-                        try {
-                          const { error } = await supabase
-                            .from("application_reviewer_assignments")
-                            .upsert(
-                              {
-                                application_id: a.id,
-                                reviewer_id: reviewer,
-                                assigned_by: auth.user?.id,
-                              },
-                              { onConflict: "application_id,reviewer_id" },
-                            );
-                          if (error) throw error;
-                          detail.refresh();
-                          setNotice("Reviewer assigned.");
-                        } catch (error) {
-                          setNotice(authErrorMessage(error, "Unable to assign reviewer."));
-                        } finally {
-                          setBusy(false);
-                        }
-                      }}
-                    >
-                      Assign reviewer
-                    </Button>
-                    {detail.data?.assignments.map((assignment) => (
-                      <div
-                        key={assignment.id}
-                        className="flex items-center justify-between gap-2 text-sm"
-                      >
-                        <span>
-                          {staff.data?.find((person) => person.id === assignment.reviewer_id)
-                            ?.full_name || assignment.reviewer_id}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={busy}
-                          onClick={async () => {
-                            if (!confirm("Remove this reviewer’s access to this application?"))
-                              return;
-                            setBusy(true);
-                            try {
-                              const { error } = await supabase
-                                .from("application_reviewer_assignments")
-                                .delete()
-                                .eq("id", assignment.id)
-                                .select("id")
-                                .single();
-                              if (error) throw error;
-                              detail.refresh();
-                              setNotice("Reviewer removed.");
-                            } catch (error) {
-                              setNotice(authErrorMessage(error, "Unable to remove reviewer."));
-                            } finally {
-                              setBusy(false);
-                            }
-                          }}
-                        >
-                          Remove reviewer
-                        </Button>
-                      </div>
+              <>
+                <Card className="space-y-3 p-5">
+                  <h3 className="font-semibold">Assign a reviewer</h3>
+                  <DataState loading={staff.loading} error={staff.error} retry={staff.refresh} />
+                  <select
+                    aria-label="Reviewer"
+                    className={inputCls}
+                    value={reviewer}
+                    onChange={(event) => setReviewer(event.target.value)}
+                  >
+                    <option value="">Select reviewer</option>
+                    {staff.data?.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.full_name || person.email}
+                      </option>
                     ))}
-                  </Card>
-                  <Card className="space-y-3 p-5">
-                    <h3 className="font-semibold">Private documents</h3>
-                    <DataState
-                      loading={documents.loading}
-                      error={documents.error}
-                      retry={documents.refresh}
-                      empty={
-                        !documents.loading && !documents.error && !documents.data?.length
-                          ? "No documents uploaded."
-                          : undefined
+                  </select>
+                  <Button
+                    variant="outline"
+                    disabled={!reviewer || busy}
+                    onClick={async () => {
+                      setBusy(true);
+                      try {
+                        const { error } = await supabase
+                          .from("application_reviewer_assignments")
+                          .upsert(
+                            {
+                              application_id: a.id,
+                              reviewer_id: reviewer,
+                              assigned_by: auth.user?.id,
+                            },
+                            { onConflict: "application_id,reviewer_id" },
+                          );
+                        if (error) throw error;
+                        detail.refresh();
+                        setNotice("Reviewer assigned.");
+                      } catch (error) {
+                        setNotice(authErrorMessage(error, "Unable to assign reviewer."));
+                      } finally {
+                        setBusy(false);
                       }
-                    />
-                    {documents.data?.map((file) => (
+                    }}
+                  >
+                    Assign reviewer
+                  </Button>
+                  {detail.data?.assignments.map((assignment) => (
+                    <div
+                      key={assignment.id}
+                      className="flex items-center justify-between gap-2 text-sm"
+                    >
+                      <span>
+                        {staff.data?.find((person) => person.id === assignment.reviewer_id)
+                          ?.full_name || assignment.reviewer_id}
+                      </span>
                       <Button
-                        key={file.id}
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
+                        disabled={busy}
                         onClick={async () => {
+                          if (
+                            !confirm(
+                              "Remove this reviewer assignment? Their admin permissions will remain unchanged.",
+                            )
+                          )
+                            return;
+                          setBusy(true);
                           try {
-                            window.open(
-                              await privateDocumentUrl(`${a.applicant_id}/${file.name}`),
-                              "_blank",
-                              "noopener",
-                            );
+                            const { error } = await supabase
+                              .from("application_reviewer_assignments")
+                              .delete()
+                              .eq("id", assignment.id)
+                              .select("id")
+                              .single();
+                            if (error) throw error;
+                            detail.refresh();
+                            setNotice("Reviewer removed.");
                           } catch (error) {
-                            setNotice(authErrorMessage(error, "Unable to open document."));
+                            setNotice(authErrorMessage(error, "Unable to remove reviewer."));
+                          } finally {
+                            setBusy(false);
                           }
                         }}
                       >
-                        {file.name}
+                        Remove reviewer
                       </Button>
-                    ))}
-                  </Card>
-                </>
-              )}
+                    </div>
+                  ))}
+                </Card>
+                <Card className="space-y-3 p-5">
+                  <h3 className="font-semibold">Private documents</h3>
+                  <DataState
+                    loading={documents.loading}
+                    error={documents.error}
+                    retry={documents.refresh}
+                    empty={
+                      !documents.loading && !documents.error && !documents.data?.length
+                        ? "No documents uploaded."
+                        : undefined
+                    }
+                  />
+                  {documents.data?.map((file) => (
+                    <Button
+                      key={file.id}
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          window.open(
+                            await privateDocumentUrl(`${a.applicant_id}/${file.name}`),
+                            "_blank",
+                            "noopener",
+                          );
+                        } catch (error) {
+                          setNotice(authErrorMessage(error, "Unable to open document."));
+                        }
+                      }}
+                    >
+                      {file.name}
+                    </Button>
+                  ))}
+                </Card>
+              </>
               <Card className="p-5">
                 <h3 className="label text-[10px] text-glaucous">Domain preferences</h3>
                 <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">

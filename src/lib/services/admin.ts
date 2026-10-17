@@ -205,6 +205,7 @@ export async function getAdminInvites() {
   const { data, error } = await supabase
     .from("admin_invites")
     .select("id,email,role,expires_at,accepted_at,revoked_at,created_at")
+    .in("role", ["admin", "super_admin"])
     .order("created_at", { ascending: false })
     .limit(100);
   if (error) throw error;

@@ -10,9 +10,16 @@ import { getAdminInvites } from "../../lib/services/admin";
 
 export function AdminInvites() {
   const auth = useAuthState();
+  if (auth.role !== "super_admin")
+    return <DataState error="You do not have permission to access this page." />;
+  return <AccessSettings />;
+}
+
+function AccessSettings() {
+  const auth = useAuthState();
   const superAdmin = auth.role === "super_admin";
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<Exclude<AppRole, "applicant">>("recruiter");
+  const [role, setRole] = useState<Exclude<AppRole, "applicant">>("admin");
   const [link, setLink] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -40,24 +47,14 @@ export function AdminInvites() {
     if (error) throw error;
     return data ?? [];
   }, [superAdmin, users.data]);
-  const audit = useRemote(async () => {
-    if (!superAdmin) return [];
-    const { data, error } = await supabase
-      .from("audit_logs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .range(page * 25, page * 25 + 24);
-    if (error) throw error;
-    return data ?? [];
-  }, [superAdmin, page]);
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <Kicker>Administration</Kicker>
         <h1 className="mt-1 font-display text-2xl font-bold">Access and invitations</h1>
         <p className="mt-2 text-sm text-ink-soft">
-          Admins may invite recruiters. Super admins manage administrative roles. Invitation links
-          expire after seven days.
+          Super admins manage staff invitations and account roles. Invitation links expire after
+          seven days.
         </p>
       </div>
       <Card className="p-6">
@@ -103,7 +100,7 @@ export function AdminInvites() {
               value={role}
               onChange={(event) => setRole(event.target.value as typeof role)}
             >
-              {(superAdmin ? ["recruiter", "admin", "super_admin"] : ["recruiter"]).map((value) => (
+              {["admin", "super_admin"].map((value) => (
                 <option key={value}>{value}</option>
               ))}
             </select>
@@ -226,8 +223,8 @@ export function AdminInvites() {
                       ?.filter((r) => r.user_id === user.id)
                       .sort(
                         (a, b) =>
-                          ["super_admin", "admin", "recruiter", "applicant"].indexOf(a.role) -
-                          ["super_admin", "admin", "recruiter", "applicant"].indexOf(b.role),
+                          ["super_admin", "admin", "applicant"].indexOf(a.role) -
+                          ["super_admin", "admin", "applicant"].indexOf(b.role),
                       )[0]?.role ?? "applicant"
                   }
                   onChange={async (event) => {
@@ -241,7 +238,6 @@ export function AdminInvites() {
                       });
                       if (error) throw error;
                       roles.refresh();
-                      audit.refresh();
                       setNotice("User role updated.");
                     } catch (error) {
                       setNotice(authErrorMessage(error, "Unable to change this role."));
@@ -250,24 +246,10 @@ export function AdminInvites() {
                     }
                   }}
                 >
-                  {["applicant", "recruiter", "admin", "super_admin"].map((value) => (
+                  {["applicant", "admin", "super_admin"].map((value) => (
                     <option key={value}>{value}</option>
                   ))}
                 </select>
-              </div>
-            ))}
-          </Card>
-          <Card className="p-6">
-            <h2 className="font-display text-xl font-bold">Audit activity</h2>
-            <DataState loading={audit.loading} error={audit.error} retry={audit.refresh} />
-            {audit.data?.map((entry) => (
-              <div key={entry.id} className="mt-3 border-t border-line pt-3 text-sm">
-                <p>
-                  {entry.action} · {entry.entity_type}
-                </p>
-                <p className="text-xs text-ink-soft">
-                  {new Date(entry.created_at).toLocaleString()} · Actor {entry.actor_id ?? "System"}
-                </p>
               </div>
             ))}
           </Card>
@@ -279,7 +261,7 @@ export function AdminInvites() {
             <Button
               variant="outline"
               size="sm"
-              disabled={!users.data?.length && !audit.data?.length}
+              disabled={(users.data?.length ?? 0) < 25}
               onClick={() => setPage(page + 1)}
             >
               Next

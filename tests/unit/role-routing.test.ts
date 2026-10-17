@@ -3,8 +3,7 @@ import { invitationReturnPath, roleHomePath } from "../../src/lib/roleRouting";
 
 describe("shared sign-in routing", () => {
   it("routes only recognized staff roles to the admin panel", () => {
-    for (const role of ["admin", "super_admin", "recruiter"] as const)
-      expect(roleHomePath(role)).toBe("/admin");
+    for (const role of ["admin", "super_admin"] as const) expect(roleHomePath(role)).toBe("/admin");
     expect(roleHomePath("applicant")).toBe("/dashboard");
     expect(roleHomePath(null)).toBeNull();
   });

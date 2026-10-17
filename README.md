@@ -34,10 +34,10 @@ Database tests create and remove their own disposable, network-isolated PostgreS
 
 - One shared login for all account roles, applicant-only signup, session restoration, password recovery, profile and private documents. See [account roles](docs/ACCOUNT_ROLES.md).
 - Persistent application drafts, configurable questions/preferences, atomic submission and server-enforced deadlines.
-- Assigned recruiter review, staff search/filtering, notes, interviews, evaluations, notifications and results.
-- Invitation-only staff provisioning, current-role enforcement, super-admin role management and audit history.
+- Admin applicant review, staff search/filtering, notes, interviews, evaluations, notifications and results.
+- Super-admin-only staff provisioning and role management; applicant/admin/super-admin roles. Recruiter and application audit/activity features are retired without deleting historical records.
 - Persistent CMS for achievements, projects, events, announcements, team, gallery, homepage highlights, campaigns, rounds, questions, domains and tasks.
 
 Member messages deliver **in-app notifications**, not external email. Production Auth SMTP is configured; real inbox delivery still needs verification.
 
-See [Render deployment and admin operations](docs/RENDER_DEPLOYMENT.md), [Supabase setup](docs/SUPABASE_SETUP.md), [feature/security inventory](docs/backend-feature-inventory.md), and [verification report](docs/IMPLEMENTATION_REPORT.md). The 2026-10-17 hosted preflight verified the designated super admin and all 15 migrations are applied. Consult the release report for frontend deployment status; local test completion alone does not prove a live release.
+See [Render deployment and admin operations](docs/RENDER_DEPLOYMENT.md), [Supabase setup](docs/SUPABASE_SETUP.md), [feature/security inventory](docs/backend-feature-inventory.md), and [verification report](docs/IMPLEMENTATION_REPORT.md). The 2026-10-17 hosted preflight verified the designated super admin and all 16 migrations are applied, including role/activity retirement. Consult the release report for frontend deployment status; local test completion alone does not prove a live release.

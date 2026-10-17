@@ -9,7 +9,7 @@ export type AuthState = {
   role: AppRole | null;
   error?: string;
 };
-export const adminRoles: readonly AppRole[] = ["recruiter", "admin", "super_admin"];
+export const adminRoles: readonly AppRole[] = ["admin", "super_admin"];
 export function isAdminRole(role: AppRole | null): boolean {
   return role !== null && adminRoles.includes(role);
 }
