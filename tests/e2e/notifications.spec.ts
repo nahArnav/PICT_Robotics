@@ -114,10 +114,14 @@ test("applicant read-notification deletion supports cancel, retry and reload per
 test("admin notification bell deletes read items but cannot delete another user's notification", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
   await login(page, 1);
   await page.getByRole("button", { name: "Notifications", exact: true }).click();
   const panel = page.getByRole("region", { name: "Notifications", exact: true });
   await expect(panel.getByText(titles.adminRead, { exact: true })).toBeVisible();
+  const bounds = await panel.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
   await expect(
     panel.getByRole("button", { name: `Delete notification: ${titles.adminUnread}`, exact: true }),
   ).toHaveCount(0);

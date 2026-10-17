@@ -10,7 +10,9 @@ Migration 202610180001 adds one authenticated DELETE policy requiring ownership,
 
 Hosted postflight confirmed 17 migration versions, the exact owner/read/active-account policy and unchanged counts of 3 notifications, 13 profiles and 1 application. The read-only hosted RLS/staff-RPC smoke script passed. No real production notification was deleted during verification.
 
-Executed checks: **13 unit tests, 18 end-to-end tests (53.0 seconds), 96 database assertions across 17 migrations**, TypeScript and the environment-validated production build passed. New browser cases cover applicant/admin UI deletion, cancel, network-failure/retry, unread controls, reload/login persistence and cross-account API isolation.
+Executed checks: **13 unit tests, 18 end-to-end tests (53.3 seconds), 96 database assertions across 17 migrations**, TypeScript and the environment-validated production build passed. New browser cases cover applicant/admin UI deletion, cancel, network-failure/retry, unread controls, reload/login persistence and cross-account API isolation.
+
+An additional 390×844 viewport assertion exposed the admin bell popup opening partly off-screen when the mobile header wrapped. The popup now anchors to the full header on small screens while retaining its desktop anchor. Both targeted notification cases and the final full 18-case suite passed again, including explicit in-viewport bounds and mobile deletion.
 
 Read-only Auth inspection on 2026-10-18 reconfirmed Supabase Auth uses enabled custom Gmail SMTP (`smtp.gmail.com:465`) with email confirmation required; secrets were neither displayed nor changed. This sends Auth verification/recovery mail only. Member/interview updates remain in-app, not external emails. [NOTIFICATIONS_AND_INTERVIEWS.md](NOTIFICATIONS_AND_INTERVIEWS.md) documents the exact controls and scheduling steps.
 
@@ -64,7 +66,7 @@ React/Vite/Tailwind, branding, animation assets and existing public/portal route
 | `pnpm test` | 13 unit tests passed |
 | `pnpm test:database` | All 17 migrations applied to a disposable network-isolated PostgreSQL 16 container; 96 workflow/security assertions passed |
 | Local Supabase migrations | Applied successfully to the dedicated real Supabase PostgreSQL 17 stack |
-| `pnpm test:e2e` | Final full run: 18 tests passed in 53.0 seconds using local Auth/PostgREST/Storage and Chromium, including read-notification deletion, activity/role retirement and a valid legacy admin credential |
+| `pnpm test:e2e` | Final full run: 18 tests passed in 53.3 seconds using local Auth/PostgREST/Storage and Chromium, including mobile read-notification deletion, activity/role retirement and a valid legacy admin credential |
 | `pnpm build:production` | Public environment guard, type/unit checks and build passed; large-chunk warning remains |
 | `pnpm peers check` | No peer dependency issues |
 | `git diff --check` | Passed |

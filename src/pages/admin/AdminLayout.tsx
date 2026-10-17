@@ -162,7 +162,7 @@ function AdminShell({ signOut }: { signOut: () => void }) {
               </option>
             ))}
           </select>
-          <div className="relative">
+          <div className="sm:relative">
             <button
               aria-label="Notifications"
               onClick={() => setShowNotifications(!showNotifications)}
@@ -177,7 +177,7 @@ function AdminShell({ signOut }: { signOut: () => void }) {
               <div
                 role="region"
                 aria-label="Notifications"
-                className="absolute right-0 top-full mt-2 max-h-[70vh] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-line bg-white p-4 shadow-lg"
+                className="absolute right-4 top-full mt-2 max-h-[70vh] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-line bg-white p-4 shadow-lg sm:right-0"
               >
                 <DataState loading={notifications.loading} error={notifications.error} />
                 <Button
