@@ -233,3 +233,47 @@ select public.test_assert(not exists(select 1 from public.inspect_admin_invite('
 select public.test_denied($$select public.accept_admin_invite('88888888-0000-4000-8000-000000000003')$$,'retired invitation acceptance blocked');
 select public.test_assert(public.send_member_notifications(array['00000000-0000-0000-0000-000000000002'::uuid],'Old request','Retry','88888888-0000-4000-8000-000000000005')=0,'historical notification retry remains idempotent after activity removal');
 select public.test_denied($$select * from public.member_notification_receipts$$,'notification retry receipts are not a readable activity feed');
+
+-- Read notifications can be deleted only by their owner, regardless of staff role.
+reset role;
+insert into public.notifications(id,user_id,title,message,read) values
+ ('99999999-0000-4000-8000-000000000001','00000000-0000-0000-0000-000000000002','Unread deletion fixture','Keep until read',false),
+ ('99999999-0000-4000-8000-000000000002','00000000-0000-0000-0000-000000000006','Admin deletion fixture','Own read notification',true),
+ ('99999999-0000-4000-8000-000000000003','88888888-0000-4000-8000-000000000001','Other owner fixture','Private read notification',true),
+ ('99999999-0000-4000-8000-000000000004','00000000-0000-0000-0000-000000000002','Banned deletion fixture','Keep when banned',true);
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
+delete from public.notifications where id='99999999-0000-4000-8000-000000000001';
+select public.test_assert(exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000001'),'unread notification cannot be deleted');
+delete from public.notifications where id='99999999-0000-4000-8000-000000000002';
+reset role;
+select public.test_assert(exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000002'),'applicant cannot delete another account notification');
+set role authenticated;
+update public.notifications set read=true where id='99999999-0000-4000-8000-000000000001';
+delete from public.notifications where id='99999999-0000-4000-8000-000000000001';
+select public.test_assert(not exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000001'),'owner can delete a notification after marking it read');
+update public.notifications set read=true where title='Notice';
+delete from public.notifications where title='Notice';
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000006',false);
+delete from public.notifications where id='99999999-0000-4000-8000-000000000003';
+delete from public.notifications where id='99999999-0000-4000-8000-000000000002';
+select public.test_assert(not exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000002'),'admin can delete only their own read notification');
+select public.test_assert(public.send_member_notifications(array['00000000-0000-0000-0000-000000000002'::uuid],'Notice','Real message','30000000-0000-0000-0000-000000000001')=0,'deletion does not cause notification retries to resurrect messages');
+reset role;
+select public.test_assert(exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000003'),'admin cannot delete another account notification');
+-- Previous applicant cross-owner deletion also left the admin fixture intact until its owner deleted it.
+set role anon;
+delete from public.notifications where id='99999999-0000-4000-8000-000000000003';
+reset role;
+select public.test_assert(exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000003'),'anonymous deletion is blocked');
+update auth.users set banned_until=now()+interval '1 day' where id='00000000-0000-0000-0000-000000000002';
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
+delete from public.notifications where id='99999999-0000-4000-8000-000000000004';
+reset role;
+select public.test_assert(exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000004'),'banned token cannot delete notifications');
+set role authenticated;
+select set_config('request.jwt.claim.sub','88888888-0000-4000-8000-000000000001',false);
+delete from public.notifications where id='99999999-0000-4000-8000-000000000004';
+reset role;
+select public.test_assert(exists(select 1 from public.notifications where id='99999999-0000-4000-8000-000000000004'),'super admin cannot delete another account notification');
