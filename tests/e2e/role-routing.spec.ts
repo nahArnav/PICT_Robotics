@@ -9,14 +9,16 @@ const service = createClient(config.API_URL, config.SERVICE_ROLE_KEY, {
 });
 const tag = Date.now();
 const password = `Role-${tag}-Test!`;
+// Sign-in must accept a valid older credential even if signup now asks for eight characters.
+const legacyPassword = "Old7!x";
 const roles = ["applicant", "recruiter", "admin", "super_admin"] as const;
 const users = new Map<string, { id: string; email: string }>();
 function ok(result: { error: unknown }) {
   if (result.error) throw result.error;
 }
-async function signIn(page: Page, email: string) {
+async function signIn(page: Page, email: string, credential = password) {
   await page.getByLabel("Email", { exact: true }).fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByLabel("Password", { exact: true }).fill(credential);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }
 
@@ -25,7 +27,7 @@ test.beforeAll(async () => {
     const email = `routing-${role}-${tag}@example.com`;
     const result = await service.auth.admin.createUser({
       email,
-      password,
+      password: role === "admin" ? legacyPassword : password,
       email_confirm: true,
       // An attacker-controlled metadata role must never confer staff access.
       user_metadata: { full_name: `Routing ${role}`, role: "super_admin" },
@@ -48,7 +50,7 @@ for (const role of roles) {
     await page.goto("/admin/login");
     await expect(page).toHaveURL(/\/signin$/);
     await expect(page.getByRole("heading", { name: "Sign in", exact: true })).toBeVisible();
-    await signIn(page, users.get(role)!.email);
+    await signIn(page, users.get(role)!.email, role === "admin" ? legacyPassword : password);
     const home = role === "applicant" ? /\/dashboard$/ : /\/admin$/;
     await expect(page).toHaveURL(home);
     await page.reload();
@@ -108,7 +110,7 @@ test("a revoked staff role loses its dashboard on reload with the same session",
 }) => {
   const user = users.get("admin")!;
   await page.goto("/signin");
-  await signIn(page, user.email);
+  await signIn(page, user.email, legacyPassword);
   await expect(page).toHaveURL(/\/admin$/);
   ok(await service.from("user_roles").delete().eq("user_id", user.id));
   ok(await service.from("user_roles").insert({ user_id: user.id, role: "applicant" }));

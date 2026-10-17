@@ -12,6 +12,8 @@ Everyone signs in at https://pict-robotics.onrender.com/signin. Old `/admin/logi
 
 New people must create and verify an Auth account before signing in. The database trigger grants **only applicant** access. Signup metadata, an email typed into the form, a URL, local storage or the login screen cannot grant staff permissions. PostgreSQL RLS/RPC checks protect direct requests as well as the UI.
 
+The eight-character signup prompt applies only when creating an account. Sign-in accepts an existing valid credential and delegates password verification to Supabase, so adopting the shared interface does not lock out older staff accounts.
+
 ## Assign staff before their next sign-in
 
 Recommended: sign in as a super admin, open **Settings → User roles**, search the account email and choose the intended role. It is stored in `public.user_roles` against the verified Auth user's UUID. On their next sign-in the shared page opens the correct dashboard. A signed-in user's UI rechecks roles on focus/within 60 seconds; reload is immediate. Backend authorization checks current roles on every request.

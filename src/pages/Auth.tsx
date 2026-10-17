@@ -133,13 +133,13 @@ export function Auth({ mode = "signin" }: { mode?: "signin" | "signup" }) {
                 <Field label="Password" required>
                   <input
                     required
-                    minLength={8}
+                    minLength={isSignup ? 8 : undefined}
                     type="password"
                     autoComplete={isSignup ? "new-password" : "current-password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={inputCls}
-                    placeholder="At least 8 characters"
+                    placeholder={isSignup ? "At least 8 characters" : "Your password"}
                   />
                 </Field>
                 {error && (
