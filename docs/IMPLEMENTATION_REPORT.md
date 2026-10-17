@@ -10,13 +10,13 @@ The current release build passed production environment validation, TypeScript, 
 
 Release `289e527` was pushed to `main` and Render's public root served its matching `index-DvIMYj6B.js` bundle. A live browser check confirmed published Supabase projects render and client-side navigation reaches sign-in. Direct `/admin/login` and `/signin` requests still return **301 to `/index.html`**, which then displays the router's 404: the saved Render rule is a Redirect, not the required Rewrite. The owner has been asked to correct the action/check for an earlier duplicate wildcard rule. Existing Render build/environment settings were not independently verified; `render.yaml` alone does not update an unmanaged service.
 
-The follow-up shared-login change uses `/signin` for every role and preserves `/admin/login` as an alias. Preassigned applicant/recruiter/admin/super-admin roles, refresh, existing-session redirects, wrong-dashboard visits, missing roles, forged metadata and revoked access are covered by six new local browser tests. The database remains the security boundary; no frontend email allow-list or role selection was added. [ACCOUNT_ROLES.md](ACCOUNT_ROLES.md) explains safe provisioning.
+The follow-up shared-login change (`14429b7`, released through `de41c77`) is also live: Render serves the exact verified `index-Dbx3EaUo.js` build, and the live browser shows the shared Email/Password screen after navigating from the homepage. It uses `/signin` for every role and preserves `/admin/login` as an alias. Preassigned applicant/recruiter/admin/super-admin roles, refresh, existing-session redirects, wrong-dashboard visits, missing roles, forged metadata and revoked access are covered by six new local browser tests. The database remains the security boundary; no frontend email allow-list or role selection was added. [ACCOUNT_ROLES.md](ACCOUNT_ROLES.md) explains safe provisioning.
 
 Production Auth inspection confirmed the correct HTTPS Site URL, required email confirmation and enabled custom Gmail SMTP. The redirect allow-list contained only the origin; a sparse production config added `/signin`, `/reset-password` and `/admin/signup**`. A post-update comparison found zero declared differences and confirmed all unrelated settings were unchanged. SMTP credentials were preserved; real production inbox delivery and a live authenticated admin session remain unverified.
 
 ## Outcome
 
-The existing frontend is connected to Supabase across public content, applicant and admin workflows. The backend and initial frontend release are deployed, with the shared-login follow-up locally verified. This is **not a claim that every production workflow has passed**: the Render routing correction and controlled production login/email smoke checks remain outstanding. No hosted password, existing account role or application decision was changed.
+The existing frontend is connected to Supabase across public content, applicant and admin workflows. The backend and shared-login frontend are deployed. This is **not a claim that every production workflow has passed**: the Render routing correction and controlled production login/email smoke checks remain outstanding. No hosted password, existing account role or application decision was changed.
 
 React/Vite/Tailwind, branding, animation assets and existing public/portal routes remain. Operational screens use database data with loading/error/empty states. Demo credentials, fake operational data and missing custom-endpoint success paths were replaced. Existing public content was preserved as CMS records, not replaced with newly invented club claims.
 
@@ -78,7 +78,7 @@ Follow [SUPABASE_SETUP.md](SUPABASE_SETUP.md):
 
 1. Super-admin verification, private backups, all 15 migration versions and the hosted read-only RLS/staff-RPC smoke script are complete. Never reset production or blindly replay baseline table creation.
 2. Site URL, redirect allow-list, email confirmation and configured SMTP are checked/corrected. Verify real signup/recovery delivery in a controlled inbox. Invitations provide a shareable link, not an automatically sent email.
-3. Correct Render's wildcard action to **Rewrite**, verify direct route refreshes stay on their requested URL, then check the shared-login release is served.
+3. Correct Render's wildcard action to **Rewrite** and verify direct route refreshes stay on their requested URL. The shared-login release itself is confirmed served.
 4. Execute the remaining controlled production login/admin workflow smoke. Do not publish a new recruitment campaign or alter real application decisions merely to test deployment.
 
 The publicly visible existing campaign closed on 2026-09-30 despite `status='open'`. An administrator must intentionally configure valid current dates/status before production applications can be accepted; the implementation does not silently reopen it.
