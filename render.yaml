@@ -1,0 +1,31 @@
+# Mirrors the existing static site srv-daramg7pn0mc738ojqbg.
+# Apply to that service; do not provision a duplicate site or a second database.
+services:
+  - type: web
+    name: PICT_Robotics
+    runtime: static
+    repo: https://github.com/nahArnav/PICT_Robotics
+    branch: main
+    buildCommand: npx --yes pnpm@10.34.3 install --frozen-lockfile --prod=false && npx --yes pnpm@10.34.3 run build:production
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_SUPABASE_URL
+        value: https://ycsqqktwzvqqblarqpfi.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable

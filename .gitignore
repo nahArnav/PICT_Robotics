@@ -3,6 +3,13 @@ dist/
 build/
 .cache/
 .env*
+!.env.example
+.backups/
+.DS_Store
+playwright-report/
+test-results/
+supabase/.temp/
+supabase/.branches/
 .vite/
 vite.config.*.timestamp-*
 *.tsbuildinfo
