@@ -1,0 +1,13 @@
+# Intentionally sparse. Never push the local test config to production.
+# Review `supabase config diff --project-ref ycsqqktwzvqqblarqpfi
+# --workdir deploy/production-auth` before pushing this file.
+# Undeclared SMTP, confirmation, provider and security settings stay unchanged.
+project_id = "ycsqqktwzvqqblarqpfi"
+
+[auth]
+additional_redirect_urls = [
+  "https://pict-robotics.onrender.com",
+  "https://pict-robotics.onrender.com/signin",
+  "https://pict-robotics.onrender.com/reset-password",
+  "https://pict-robotics.onrender.com/admin/signup**",
+]

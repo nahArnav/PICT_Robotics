@@ -32,7 +32,7 @@ The rewrite is necessary for opening or refreshing `/admin/login`, `/dashboard/*
 
 ## Day-to-day admin use
 
-Sign in at https://pict-robotics.onrender.com/admin/login with a real staff Auth account. The owner's designated account was verified as an active, confirmed `super_admin` during the 2026-10-17 preflight. Account emails/passwords are not published in this repository.
+Everyone signs in at https://pict-robotics.onrender.com/signin. The trusted database role opens the applicant or staff dashboard automatically; old `/admin/login` bookmarks forward to that same screen. The owner's designated account was verified as an active, confirmed `super_admin` during the 2026-10-17 preflight. Account emails/passwords are not published in this repository. See [account role provisioning](ACCOUNT_ROLES.md) for preassigned roles and invitations.
 
 - **Recruitment:** Admin → Recruitment → Cycles. Create/edit name, year group, opening/closing date and preference limit. Set status `open`, or use **Open recruitment** once the dates cover the current time. **Close recruitment** immediately stops new saves/submissions without deleting applications. An expired `open` campaign still rejects applications. Do not overwrite historical campaign dates just to make a screenshot's button work; create a new campaign when appropriate.
 - **Events:** Admin → Events. Create title, summary, details, category, dates, venue, registration URL and optional image. Select `published` to display it publicly; draft stays private. Edit/delete controls persist changes subject to linked-record safeguards.
