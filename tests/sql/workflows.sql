@@ -23,6 +23,10 @@ values('10000000-0000-0000-0000-000000000001','Test cycle','test','FY/SY',now()-
 insert into public.recruitment_questions(id,recruitment_cycle_id,question,question_type,required)
 values('20000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001','Required?','long_text',true);
 
+-- A saved pre-builder draft exercises the preserved legacy RPC path.
+insert into public.applications(applicant_id,recruitment_cycle_id)
+ values('00000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001');
+
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 select public.test_assert(public.current_role()='applicant','signup metadata cannot grant admin');
@@ -125,6 +129,8 @@ select public.test_denied($$select public.create_admin_invite('bad@test.local','
 reset role;
 insert into public.recruitment_cycles(id,name,academic_year,target_batch,application_open,application_close,status)
 values('10000000-0000-0000-0000-000000000002','Question edge cases','test','FY/SY',now()-interval '1 day',now()+interval '1 day','open');
+insert into public.applications(applicant_id,recruitment_cycle_id)
+ values('00000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000002');
 insert into public.recruitment_questions(id,recruitment_cycle_id,question,question_type,required,options) values
  ('20000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000002','Optional choice','single_choice',false,'["A","B"]'),
  ('20000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000002','Multiple choice','multi_choice',true,'["X","Y"]'),

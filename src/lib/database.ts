@@ -61,6 +61,20 @@ export type ApplicationRow = {
   reviewed_by: string | null;
   created_at: string;
   updated_at: string;
+  form_schema: Json | null;
+  form_revision: number | null;
+  form_values: Json;
+};
+
+export type ApplicationFormConfigRow = {
+  recruitment_cycle_id: string;
+  draft_schema: Json;
+  draft_revision: number;
+  published_schema: Json | null;
+  published_revision: number;
+  updated_by: string | null;
+  updated_at: string;
+  published_at: string | null;
 };
 
 export type ContentRow = {
@@ -144,6 +158,7 @@ export type Database = {
         updated_at: string;
       }>;
       applications: Table<ApplicationRow>;
+      recruitment_application_forms: Table<ApplicationFormConfigRow>;
       application_domain_preferences: Table<{
         id: string;
         application_id: string;
@@ -320,6 +335,24 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      application_file_is_locked: { Args: { p_path: string }; Returns: boolean };
+      save_application_form: {
+        Args: { p_cycle_id: string; p_schema: Json; p_expected_revision: number };
+        Returns: ApplicationFormConfigRow;
+      };
+      publish_application_form: {
+        Args: { p_cycle_id: string; p_expected_revision: number };
+        Returns: ApplicationFormConfigRow;
+      };
+      unpublish_application_form: {
+        Args: { p_cycle_id: string; p_expected_revision: number };
+        Returns: undefined;
+      };
+      get_published_application_form: { Args: { p_cycle_id: string }; Returns: Json };
+      save_built_application_draft: {
+        Args: { p_cycle_id: string; p_form_revision: number; p_values: Json };
+        Returns: ApplicationRow;
+      };
       inspect_admin_invite: {
         Args: { p_token: string };
         Returns: {

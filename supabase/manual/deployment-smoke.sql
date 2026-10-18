@@ -9,6 +9,18 @@ begin
     or exists(select 1 from public.interviews)
     or exists(select 1 from public.user_roles) or exists(select 1 from public.admin_invites)
   then raise exception 'Anonymous RLS isolation failed'; end if;
+  begin
+    perform 1 from public.recruitment_application_forms;
+    raise exception 'Anonymous form-builder configuration unexpectedly exposed';
+  exception when insufficient_privilege then null;
+  end;
+  if has_function_privilege('anon','public.get_published_application_form(uuid)','EXECUTE')
+    or has_function_privilege('anon','public.save_built_application_draft(uuid,integer,jsonb)','EXECUTE')
+    or has_function_privilege('authenticated','public.validate_application_form_schema(jsonb,boolean,uuid)','EXECUTE')
+    or has_function_privilege('authenticated','public.validate_application_form_values(jsonb,jsonb,boolean,uuid)','EXECUTE')
+    or has_function_privilege('authenticated','public.save_legacy_application_draft(uuid,text,text,text,text,uuid[],jsonb)','EXECUTE')
+    or has_table_privilege('authenticated','public.recruitment_application_forms','INSERT,UPDATE,DELETE')
+  then raise exception 'Form-builder private write/validation grants are unsafe'; end if;
   if exists(select 1 from public.projects where not published)
     or exists(select 1 from public.achievements where not published)
     or exists(select 1 from public.gallery_items where not published)
@@ -38,6 +50,9 @@ begin
   if not public.is_active_account() then raise exception 'Existing account is inactive'; end if;
   if (public.dashboard_metrics()->>'totalApplicants')::integer is null then raise exception 'Dashboard metrics are unavailable'; end if;
   if public.list_applications() is null then raise exception 'Applicant listing is unavailable'; end if;
+  perform 1 from public.recruitment_application_forms;
+  if not exists(select 1 from pg_trigger where tgname='application_form_snapshot_guard' and tgenabled='O')
+    then raise exception 'Application snapshot protection is disabled'; end if;
   begin
     perform 1 from public.audit_logs;
     raise exception 'Retired activity archive unexpectedly exposed to staff';

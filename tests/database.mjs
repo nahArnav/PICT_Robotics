@@ -60,9 +60,14 @@ try {
     console.log(`Applying ${file}`);
     if (file === "202610170009_simplify_roles_remove_activity.sql")
       sql(readFileSync(new URL("./sql/retirement-upgrade-fixture.sql", import.meta.url), "utf8"));
+    if (file === "202610180002_admin_application_form_builder.sql")
+      sql(readFileSync(new URL("./sql/form-builder-upgrade-fixture.sql", import.meta.url), "utf8"));
     sql(readFileSync(resolve("supabase/migrations", file), "utf8"));
+    if (file === "202610180003_preserve_existing_application_drafts.sql")
+      sql(readFileSync(new URL("./sql/form-builder-upgrade-check.sql", import.meta.url), "utf8"));
   }
   sql(readFileSync(new URL("./sql/workflows.sql", import.meta.url), "utf8"));
+  sql(readFileSync(new URL("./sql/application-forms.sql", import.meta.url), "utf8"));
   console.log("Migration chain and database workflow/security tests passed.");
 } finally {
   spawnSync("docker", ["rm", "--force", container], { encoding: "utf8" });
