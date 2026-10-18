@@ -5,6 +5,8 @@ Public origin: https://pict-robotics.onrender.com
 Repository/branch: https://github.com/nahArnav/PICT_Robotics/tree/main
 Backend: Supabase `ycsqqktwzvqqblarqpfi`. Render hosts the browser build; Supabase hosts Auth, database/RLS, RPCs and Storage. Do not create a second database or new Render service.
 
+2026-10-18 form-builder release: source through `a3acca3` is live, verified by a byte-identical `/assets/index-BUAQWM8C.js` bundle and working direct routes, including `/admin/form-builder`. Anonymous live-browser access redirects to the shared sign-in. Hosted history has all 19 migrations, and the read-only security/data-preservation checks passed. Authenticated mutation journeys were exercised locally, not against real production applicants.
+
 ## Deployment settings
 
 `render.yaml` records the existing service's intended configuration. A repository file alone does not change an unmanaged service: mirror it in the existing service or deliberately import that existing resource into a Blueprint after reviewing its settings.

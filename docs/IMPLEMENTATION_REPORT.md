@@ -10,7 +10,9 @@ First explicit applicant save pins the published schema/version. Later publicati
 
 Executed verification: TypeScript, **30 unit tests**, **144 database workflow/security assertions across 19 migrations**, the **22-case local browser suite (3.1 minutes)**, formatting checks and the environment-validated production build passed. The first full run had one local Auth gateway timeout; the trace returned HTTP 504 for sign-in. The complete rerun passed without changing authentication code. Desktop and 390-pixel mobile screenshots were inspected. Browser cases cover admin build/publish, custom questions, zero, file upload/retention, unsaved-edit warnings, interrupted-save recovery, draft/reload/submit, version retention, CAS conflict, unpublish and applicant route denial, alongside all retained workflows.
 
-Private schema/data backups were saved with owner-only permissions in the owner-approved ignored local directory before rollout. Both reviewed migrations are applied to hosted Supabase; all 19 versions match. One-way aggregate fingerprints confirmed unchanged original application columns, all 13 profiles, saved answers and domain preferences. The existing draft additionally has its pinned form/answer snapshot; application/notification counts are unchanged. The hosted read-only RLS/staff/form-builder smoke script passed. No reset, seed, role/password change or secret synchronization occurred. Render frontend verification is pending until the matching bundle is served; local success alone is not a deployment claim. See [APPLICATION_FORM_BUILDER.md](APPLICATION_FORM_BUILDER.md) for operation and limits.
+Private schema/data backups were saved with owner-only permissions in the owner-approved ignored local directory before rollout. Both reviewed migrations are applied to hosted Supabase; all 19 versions match. One-way aggregate fingerprints confirmed unchanged original application columns, all 13 profiles, saved answers and domain preferences. The existing draft additionally has its pinned form/answer snapshot; application/notification counts are unchanged. The hosted read-only RLS/staff/form-builder smoke script passed. No reset, seed, role/password change or secret synchronization occurred.
+
+Source commits `ae9cf2b` (backend/security) and `a3acca3` (builder/applicant UI/tests/docs) were pushed to the existing deployment repository. Render serves `/assets/index-BUAQWM8C.js`, verified byte-for-byte against the tested production build. `/`, `/signin`, `/admin/form-builder`, `/apply` and `/recruitment` return 200 without redirects and use that bundle. A real anonymous Chromium visit to the live builder route reached the shared sign-in, not staff controls. Authenticated builder mutations were tested on local Supabase, not performed on real production applicants merely for deployment verification. See [APPLICATION_FORM_BUILDER.md](APPLICATION_FORM_BUILDER.md) for operation and limits.
 
 ## Robot arm animation correction
 
@@ -117,7 +119,7 @@ Own-record isolation; forged signup metadata; escalation; immutable profile/emai
 
 Follow [SUPABASE_SETUP.md](SUPABASE_SETUP.md):
 
-1. Super-admin verification, private backups, all 16 migration versions and the hosted read-only RLS/staff-RPC smoke script are complete. Never reset production or blindly replay baseline table creation.
+1. Super-admin verification, private backups, all 19 migration versions and the hosted read-only RLS/staff/form-builder smoke script are complete. Never reset production or blindly replay baseline table creation.
 2. Site URL, redirect allow-list, email confirmation and configured SMTP are checked/corrected. Verify real signup/recovery delivery in a controlled inbox. Invitations provide a shareable link, not an automatically sent email.
 3. Render's wildcard **Rewrite**, direct route refreshes and exact shared-login production bundle are verified.
 4. The owner confirmed live super-admin login. Remaining controlled production mutation/email checks must not publish a new recruitment campaign or alter real application decisions merely to test deployment.
@@ -127,7 +129,7 @@ The publicly visible existing campaign closed on 2026-09-30 despite `status='ope
 ## Remaining limits
 
 - External member-email integration is not implemented. In-app notifications work; production Auth SMTP is configured but real delivery remains unverified.
-- Vite warns about bundle size: approximately 1.10 MB main JavaScript and 549 kB Three.js before gzip. Route/vendor splitting is a follow-up, not a passing production load-test claim.
+- Vite warns about bundle size: approximately 1.14 MB main JavaScript and 549 kB Three.js before gzip. Route/vendor splitting is a follow-up, not a passing production load-test claim.
 - Browser coverage is Chromium, not exhaustive device/accessibility/cross-browser/load certification. Hosted read-only backend/public-page checks passed, but live authenticated production workflows remain unverified.
 - Private documents are not malware-scanned. Issued signed links remain usable until their short 60-second expiry; club images are intentionally public.
 - Storage cleanup and database writes are not one transaction. Warnings are surfaced, but interrupted requests may leave orphan uploads for operator inspection.
