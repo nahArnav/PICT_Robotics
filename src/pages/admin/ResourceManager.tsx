@@ -13,6 +13,7 @@ import {
 } from "../../lib/services/resources";
 import { uploadClubImage, removeUnusedClubImage } from "../../lib/services/storage";
 import { useAdminCycle } from "./context";
+import { getFormBuilder } from "../../lib/services/applicationForms";
 
 type InputKind =
   | "text"
@@ -507,6 +508,11 @@ export function ResourceManager({ table }: { table: ResourceName }) {
                     setBusy(true);
                     setNotice("");
                     try {
+                      if (!close && !(await getFormBuilder(row.id))?.published_schema) {
+                        throw new Error(
+                          "Build and publish this drive’s application form in Form Builder before opening recruitment.",
+                        );
+                      }
                       await saveResource(
                         "recruitment_cycles",
                         { status: close ? "closed" : "open" },

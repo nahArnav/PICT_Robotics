@@ -36,6 +36,7 @@ const nav = [
   },
   { to: "/admin/applicants", label: "Applicants", icon: Users },
   { to: "/admin/recruitment", label: "Recruitment", icon: GitBranch },
+  { to: "/admin/form-builder", label: "Form Builder", icon: FileEdit },
   { to: "/admin/tasks", label: "Tasks", icon: ListChecks },
   {
     to: "/admin/interviews",

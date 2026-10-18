@@ -27,6 +27,8 @@ import { useRemote } from "../../lib/useRemote";
 import { supabase } from "../../lib/supabase";
 import { DataState } from "../../components/DataState";
 import { privateDocumentUrl } from "../../lib/services/storage";
+import { BuiltFormReview } from "../../components/ApplicationFormFields";
+import type { ApplicationFormSchema, FormValues } from "../../lib/applicationForms";
 
 const statusTone: Record<string, "progress" | "open" | "info" | "done" | "neutral" | "warn"> = {
   submitted: "progress",
@@ -726,7 +728,18 @@ function ApplicantDrawer({
               </Card>
             </>
           )}
-          {tab === "Application" && (
+          {tab === "Application" && a.form_schema && (
+            <Card className="space-y-4 p-5">
+              <h3 className="font-display font-semibold">
+                Form responses · version {a.form_revision}
+              </h3>
+              <BuiltFormReview
+                schema={a.form_schema as unknown as ApplicationFormSchema}
+                values={a.form_values as FormValues}
+              />
+            </Card>
+          )}
+          {tab === "Application" && !a.form_schema && (
             <Card className="p-5">
               <h3 className="label text-[10px] text-glaucous">Application details</h3>
               <div className="mt-3 space-y-4 text-sm">

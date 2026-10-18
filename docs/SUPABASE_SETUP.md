@@ -8,6 +8,8 @@ Release update, 2026-10-17: authenticated preflight confirmed the designated acc
 
 Do not send access tokens, service-role keys, database passwords or SMTP credentials in chat. Authenticate/configure them on your computer or through the Supabase Dashboard.
 
+Form-builder release, 2026-10-18: the owner approved a private local public-schema/data backup, which is retained under ignored `.backups/` with owner-only permissions. Only migrations 202610180002 and 202610180003 were pending and applied; all 19 versions now match. Aggregate fingerprints confirmed all 13 profiles, the existing application's original columns, saved answer rows and domain preferences were unchanged. The one draft now additionally has its pinned form/answer snapshot; no new application or notification was created. The read-only hosted RLS/staff/form-builder smoke checks passed. No reset, seed, account-role/password change or secret synchronization occurred.
+
 ## 1. Dedicated local environment
 
 With Docker Desktop running:
@@ -76,6 +78,8 @@ New implementation migrations, in order:
 | 202610170008 | Optional-answer/domain revalidation and banned-account enforcement for existing JWTs |
 | 202610170009 | Retires recruiter and app activity logging; admin-only review, super-admin-only provisioning, private historical retention and independent notification retry receipts |
 | 202610180001 | Enables deletion only of an active owner's read notifications; no automatic record deletion |
+| 202610180002 | Admin form schemas/draft/publish RPCs, version-pinned applications, server answer validation and submitted-file retention |
+| 202610180003 | Copies existing draft answers into pinned builder snapshots while preserving original application/answer/preference records |
 
 The existing `202609260002_fix_audit_trigger.sql` is also retained. All repository migrations must have matching verified hosted history; deploying only the last file is insufficient. New content-preservation migrations copy claims already present in the frontend, not independently verified club statistics. Review those CMS entries before launch.
 
@@ -112,7 +116,7 @@ Member Mail currently delivers idempotent **in-app notifications** to selected r
 Migrations configure:
 
 - `club-media`: public club images; JPG/PNG/WebP, 5 MB maximum; admin upload under their UUID folder, admin deletion.
-- `private-applicant-files`: private PDF/JPG/PNG, 5 MB maximum; owners upload/delete their files; owners and admins/super admins can read. Recruiters do not get document access merely from an application assignment.
+- `private-applicant-files`: private PDF/JPG/PNG, 5 MB maximum; owners upload/delete their files except attachments referenced by submitted builder applications; owners and admins/super admins can read.
 
 Private documents use 60-second signed URLs. Public images use unique non-overwriting paths. CMS replace/delete removes managed old images only after checking other database references. External URLs and still-shared images are preserved. Files selected but not saved are not uploaded. A failed cleanup is surfaced as a warning; periodically inspect storage for orphaned uploads, especially after interrupted requests. Database writes and Storage deletion cannot share a single database transaction.
 
@@ -142,7 +146,7 @@ Deploy `dist/` using the existing hosting workflow. Configure SPA history fallba
 Use controlled test accounts in a deliberately created test campaign, not real applicant records:
 
 1. Confirm migrations/history and RLS are current, verify the super-admin account, then log in at `/admin/login`.
-2. Create an open campaign with future closing date, active domains and valid questions/options. Archive expired campaigns rather than pretending they are open. Do not delete campaigns/questions with historical applications.
+2. Create a campaign with future closing date and active domains. Build, preview and publish its application in Admin → Form Builder, then Open recruitment. Archive expired campaigns rather than pretending they are open. Do not delete campaigns/questions with historical applications.
 3. Register a separate applicant, complete real email verification, save a draft, refresh, submit, and sign out/in. Verify the persisted application.
 4. Invite a separate admin; verify acceptance, review/interview/evaluation access, and denied access to super-admin settings/role grants. Demote the account and verify backend review access disappears immediately; reviewer assignment alone must not grant access.
 5. Review → shortlist → schedule → evaluate → select/waitlist/reject; confirm applicant-safe interview details, result and notifications. Check the selected campaign filter.

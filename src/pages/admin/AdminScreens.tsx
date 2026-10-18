@@ -34,6 +34,11 @@ function ResourceTabs({
         <h1 className="mt-1 font-display text-2xl font-bold">{title}</h1>
       </div>
       <div className="flex flex-wrap gap-2">
+        {title === "Recruitment management" && (
+          <Button to="/admin/form-builder" variant="cta">
+            Application form builder
+          </Button>
+        )}
         {options.map(([table, label]) => (
           <Button
             key={table}
@@ -44,6 +49,12 @@ function ResourceTabs({
           </Button>
         ))}
       </div>
+      {selected === "recruitment_questions" && (
+        <p className="rounded-lg border border-line bg-white p-4 text-sm text-ink-soft">
+          These questions support older saved applications. Use Application form builder to add or
+          import questions, then publish the complete form for new applicants.
+        </p>
+      )}
       <ResourceManager key={selected} table={selected} />
     </div>
   );

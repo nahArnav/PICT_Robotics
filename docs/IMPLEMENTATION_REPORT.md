@@ -2,6 +2,16 @@
 
 Updated: 2026-10-18. Deployment repository: `nahArnav/PICT_Robotics`.
 
+## Admin-authored application forms
+
+The entire recruitment application is now configurable under Admin → Form Builder: sections, ordering, labels, instructions, required flags, 12 input types, linked profile properties, custom questions/options, interactive preview, private builder drafts and explicit publication. Ordinary admins and super admins have access; applicants do not. New campaigns have no form until an admin builds/publishes one. The optional PICT starter uses CE/IT/ENTC/AIDS/ECE, a typed class/division and FY/SY choices restricted by the drive's exact target batch.
+
+First explicit applicant save pins the published schema/version. Later publications affect new applications only. The migration copies existing legacy drafts into pinned forms without deleting their original answer/preference/profile records; inactive saved answers and numeric zero are covered by an upgrade fixture. Historical submissions remain compatible. Submitted responses and their private attachments are protected from owner edits/deletion. Admin/applicant reviews render the actual saved schema. No page visit or preview automatically creates an application.
+
+Executed verification: TypeScript, **30 unit tests**, **144 database workflow/security assertions across 19 migrations**, the **22-case local browser suite (3.1 minutes)**, formatting checks and the environment-validated production build passed. The first full run had one local Auth gateway timeout; the trace returned HTTP 504 for sign-in. The complete rerun passed without changing authentication code. Desktop and 390-pixel mobile screenshots were inspected. Browser cases cover admin build/publish, custom questions, zero, file upload/retention, unsaved-edit warnings, interrupted-save recovery, draft/reload/submit, version retention, CAS conflict, unpublish and applicant route denial, alongside all retained workflows.
+
+Private schema/data backups were saved with owner-only permissions in the owner-approved ignored local directory before rollout. Both reviewed migrations are applied to hosted Supabase; all 19 versions match. One-way aggregate fingerprints confirmed unchanged original application columns, all 13 profiles, saved answers and domain preferences. The existing draft additionally has its pinned form/answer snapshot; application/notification counts are unchanged. The hosted read-only RLS/staff/form-builder smoke script passed. No reset, seed, role/password change or secret synchronization occurred. Render frontend verification is pending until the matching bundle is served; local success alone is not a deployment claim. See [APPLICATION_FORM_BUILDER.md](APPLICATION_FORM_BUILDER.md) for operation and limits.
+
 ## Robot arm animation correction
 
 The homepage arm now uses elbow-up inverse kinematics, a level wrist, side-face gripping and a clearance-constrained cylindrical tool path. Pickup and delivery remain interactive; each delivery locks its destination so cursor/camera movement cannot make the arm chase a moving target. Joint/body clearance, floor clearance, safe startup/reduced-motion poses, frame-rate-independent easing and portrait camera framing are covered by new tests. The camera stays near a readable side-on view instead of hiding the links behind the body.
@@ -56,7 +66,7 @@ React/Vite/Tailwind, branding, animation assets and existing public/portal route
 - One shared login, session restoration, database-role dashboard routing, logout, password recovery, and trusted applicant-only profile/default-role bootstrap.
 - Invitation-only staff acceptance for new/existing confirmed matching accounts, hashed one-use secrets, expiry/revocation and inviter-authority rechecks.
 - Current database role enforcement, admin review capabilities, super-admin-only staff provisioning and banned-account restrictions for existing JWTs. Concurrent role changes retain a super admin. Recruiter and app audit/activity features are retired.
-- Applicant profile/private documents, persistent five-step drafts, configurable question types and one-to-three domain preferences, FY/SY handling, atomic submission, duplicate prevention and server deadlines.
+- Applicant profile/private documents, admin-authored version-pinned form drafts, configurable question types and one-to-three domain preferences, FY/SY handling, atomic submission, duplicate prevention and server deadlines; historical forms remain compatible.
 - Real tasks, application/interview progress, notifications, announcements and results, including refresh/logout/login persistence.
 - Staff search/filtering/pagination, campaign metrics, private notes, reviewer assignment/removal, admin document visibility, status transitions, interviews/rescheduling/cancellation and evaluations.
 - CMS CRUD, publish/feature/order controls for achievements, projects, events, announcements, team, gallery and homepage highlights; campaign/round/question/domain/task configuration.
@@ -69,10 +79,10 @@ React/Vite/Tailwind, branding, animation assets and existing public/portal route
 | Check | Result |
 | --- | --- |
 | `pnpm typecheck` | Passed: application and test/config TypeScript |
-| `pnpm test` | 19 unit tests passed, including arm motion/clearance/framing |
-| `pnpm test:database` | Previously passed: all 17 migrations and 96 workflow/security assertions in isolated PostgreSQL 16; not rerun for the arm-only frontend correction |
+| `pnpm test` | 30 unit tests passed, including form schemas/answers and retained arm motion/clearance/framing |
+| `pnpm test:database` | Passed: all 19 migrations and 144 workflow/security/upgrade assertions in isolated PostgreSQL 16 |
 | Local Supabase migrations | Applied successfully to the dedicated real Supabase PostgreSQL 17 stack |
-| `pnpm test:e2e` | Latest full run: 20 tests passed using local Auth/PostgREST/Storage and Chromium, including the arm cycle/mobile pose, notification deletion and retained applicant/admin workflows |
+| `pnpm test:e2e` | Latest full run: 22 tests passed using local Auth/PostgREST/Storage and Chromium, including the form builder, arm cycle/mobile pose, notification deletion and retained applicant/admin workflows |
 | `pnpm build:production` | Public environment guard, type/unit checks and build passed; large-chunk warning remains |
 | `pnpm peers check` | No peer dependency issues |
 | `git diff --check` | Passed |

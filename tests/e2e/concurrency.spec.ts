@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import { pictFixtureValues, publishPictTestForm } from "../form-fixtures";
+import type { ProfileRow } from "../../src/lib/database";
 // @ts-expect-error Node-only local helper.
 import { localConfig } from "../local-config.mjs";
 const config = localConfig();
@@ -64,18 +66,17 @@ test("simultaneous drafts, submissions and interviewer bookings preserve integri
     cycleId = cycle.data.id;
     const domain = await service.from("domains").select("id").limit(1).single();
     ok(domain);
+    const form = await publishPictTestForm(clients[2], cycleId);
+    const profile = await clients[0].from("profiles").select("*").eq("id", users[0]).single();
+    ok(profile);
     const input = {
-      p_recruitment_cycle_id: cycleId,
-      p_motivation: "Robot building",
-      p_experience_summary: "",
-      p_github_url: "",
-      p_portfolio_url: "",
-      p_domain_ids: [domain.data!.id],
-      p_answers: [],
+      p_cycle_id: cycleId,
+      p_form_revision: form.revision,
+      p_values: pictFixtureValues(form.schema, profile.data as ProfileRow),
     };
     const drafts = await Promise.all([
-      clients[0].rpc("save_application_draft", input),
-      clients[0].rpc("save_application_draft", input),
+      clients[0].rpc("save_built_application_draft", input),
+      clients[0].rpc("save_built_application_draft", input),
     ]);
     drafts.forEach(ok);
     expect(drafts[0].data.id).toBe(drafts[1].data.id);
@@ -91,7 +92,12 @@ test("simultaneous drafts, submissions and interviewer bookings preserve integri
       .eq("type", "application");
     ok(notifications);
     expect(notifications.data).toHaveLength(1);
-    const second = await clients[1].rpc("save_application_draft", input);
+    const secondProfile = await clients[1].from("profiles").select("*").eq("id", users[1]).single();
+    ok(secondProfile);
+    const second = await clients[1].rpc("save_built_application_draft", {
+      ...input,
+      p_values: pictFixtureValues(form.schema, secondProfile.data as ProfileRow),
+    });
     ok(second);
     ok(
       await clients[1].rpc("submit_application", {

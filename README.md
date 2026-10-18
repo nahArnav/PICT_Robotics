@@ -33,7 +33,7 @@ Database tests create and remove their own disposable, network-isolated PostgreS
 ## Implemented workflows
 
 - One shared login for all account roles, applicant-only signup, session restoration, password recovery, profile and private documents. See [account roles](docs/ACCOUNT_ROLES.md).
-- Persistent application drafts, configurable questions/preferences, atomic submission and server-enforced deadlines.
+- Admin-built application forms with editable sections/fields/options, private preview/drafts and explicit publication; version-pinned applicant drafts, atomic submission and server-enforced deadlines. See the [form builder guide](docs/APPLICATION_FORM_BUILDER.md).
 - Admin applicant review, staff search/filtering, notes, interviews, evaluations, notifications and results.
 - Super-admin-only staff provisioning and role management; applicant/admin/super-admin roles. Recruiter and application audit/activity features are retired without deleting historical records.
 - Persistent CMS for achievements, projects, events, announcements, team, gallery, homepage highlights, campaigns, rounds, questions, domains and tasks.
@@ -42,4 +42,4 @@ Member messages deliver **in-app notifications**, not external email. Production
 
 See [notifications, mail and interview instructions](docs/NOTIFICATIONS_AND_INTERVIEWS.md) for deleting read notifications and scheduling shortlisted applicants.
 
-See [Render deployment and admin operations](docs/RENDER_DEPLOYMENT.md), [Supabase setup](docs/SUPABASE_SETUP.md), [feature/security inventory](docs/backend-feature-inventory.md), and [verification report](docs/IMPLEMENTATION_REPORT.md). The designated super admin is verified and all 17 migrations are applied, including role/activity retirement and owner-only read-notification deletion. Consult the release report for frontend deployment status; local test completion alone does not prove a live release.
+See [Render deployment and admin operations](docs/RENDER_DEPLOYMENT.md), [Supabase setup](docs/SUPABASE_SETUP.md), [feature/security inventory](docs/backend-feature-inventory.md), and [verification report](docs/IMPLEMENTATION_REPORT.md). The designated super admin is verified and all 19 migrations are applied, including the admin form builder, preserved legacy drafts, role/activity retirement and owner-only read-notification deletion. Consult the release report for frontend deployment status; local test completion alone does not prove a live release.

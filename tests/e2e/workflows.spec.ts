@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import { publishPictTestForm } from "../form-fixtures";
 // @ts-expect-error Node-only local test helper has no declaration file.
 import { localConfig } from "../local-config.mjs";
 
@@ -107,6 +108,10 @@ test.beforeAll(async () => {
     .single();
   ok(task);
   taskId = task.data.id;
+  const staff = client();
+  ok(await staff.auth.signInWithPassword({ email: adminEmail, password }));
+  await publishPictTestForm(staff, cycleId);
+  await staff.auth.signOut();
 });
 test.afterAll(async () => {
   // Exact fixture IDs only, and localConfig refuses every hosted endpoint.
@@ -144,7 +149,7 @@ test("applicant and admin complete the real recruitment journey", async ({ page,
   await page.goto(`/apply?cycle=${cycleId}`);
   await page.getByLabel("Phone", { exact: false }).fill("9876543210");
   await page.getByLabel("Branch", { exact: false }).selectOption("IT");
-  await page.getByLabel("Division", { exact: false }).selectOption("A");
+  await page.getByLabel("Class / division", { exact: true }).fill("SY-IT-A");
   await page.getByLabel("Year", { exact: true }).selectOption("SY");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await page.getByLabel("Skills", { exact: false }).fill("ROS, Python");

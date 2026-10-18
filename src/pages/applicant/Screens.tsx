@@ -14,6 +14,8 @@ import { NotificationActions } from "../../components/NotificationActions";
 import { updateApplicantProfile, type ProfileInput } from "../../lib/recruitment";
 import type { TaskRow, TaskSubmissionRow } from "../../lib/database";
 import { uploadPrivateDocument, privateDocumentUrl } from "../../lib/services/storage";
+import { BuiltFormReview } from "../../components/ApplicationFormFields";
+import type { ApplicationFormSchema, FormValues } from "../../lib/applicationForms";
 
 const label = (value?: string | null) => (value ? value.replace(/_/g, " ") : "Not started");
 function DashboardState() {
@@ -152,7 +154,18 @@ export function DashApplication() {
           ))}
         </div>
       </Card>
-      {app && (
+      {app?.form_schema && (
+        <Card className="space-y-4 p-6">
+          <h2 className="font-display text-xl font-semibold">
+            Saved form responses · version {app.form_revision}
+          </h2>
+          <BuiltFormReview
+            schema={app.form_schema as unknown as ApplicationFormSchema}
+            values={app.form_values as FormValues}
+          />
+        </Card>
+      )}
+      {app && !app.form_schema && (
         <Card className="space-y-4 p-6">
           <div>
             <p className="font-semibold">Why do you want to join?</p>
@@ -635,11 +648,24 @@ function ProfileForm({
                 variant="ghost"
                 onClick={async () => {
                   if (!confirm("Delete this document?")) return;
-                  const { error } = await supabase.storage
-                    .from("private-applicant-files")
-                    .remove([`${initial.id}/${file.name}`]);
-                  if (error) setNotice(authErrorMessage(error, "Unable to delete document."));
-                  else files.refresh();
+                  try {
+                    const path = `${initial.id}/${file.name}`;
+                    const locked = await supabase.rpc("application_file_is_locked", {
+                      p_path: path,
+                    });
+                    if (locked.error) throw locked.error;
+                    if (locked.data)
+                      throw new Error(
+                        "This file is attached to a submitted application and cannot be deleted.",
+                      );
+                    const { error } = await supabase.storage
+                      .from("private-applicant-files")
+                      .remove([path]);
+                    if (error) throw error;
+                    files.refresh();
+                  } catch (error) {
+                    setNotice(authErrorMessage(error, "Unable to delete document."));
+                  }
                 }}
               >
                 Delete

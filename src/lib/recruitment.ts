@@ -1,5 +1,7 @@
 import type { Json, ProfileRow } from "./database";
 import { supabase } from "./supabase";
+import type { PublishedForm, FormValues } from "./applicationForms";
+import { getPublishedForm } from "./services/applicationForms";
 
 export type RecruitmentQuestion = {
   id: string;
@@ -27,6 +29,7 @@ export type ApplicantFormData = {
     name: string;
   }>;
   questions: RecruitmentQuestion[];
+  form: PublishedForm;
   draft: {
     id: string;
     status: string;
@@ -36,6 +39,7 @@ export type ApplicantFormData = {
     portfolioUrl: string;
     domainIds: string[];
     answers: Record<string, Json>;
+    formValues: FormValues;
   } | null;
 };
 
@@ -85,10 +89,11 @@ export async function loadApplicantFormData(
       cycle: null,
       domains: domainsResult.data ?? [],
       questions: [],
+      form: { mode: "unpublished" },
       draft: null,
     };
 
-  const [questionsResult, applicationResult] = await Promise.all([
+  const [questionsResult, applicationResult, form] = await Promise.all([
     supabase
       .from("recruitment_questions")
       .select("id, question, question_type, required, display_order, options")
@@ -101,6 +106,7 @@ export async function loadApplicantFormData(
       .eq("applicant_id", userId)
       .eq("recruitment_cycle_id", cycle.id)
       .maybeSingle(),
+    getPublishedForm(cycle.id),
   ]);
   if (questionsResult.error) throw questionsResult.error;
   if (applicationResult.error) throw applicationResult.error;
@@ -113,6 +119,7 @@ export async function loadApplicantFormData(
       cycle,
       domains: domainsResult.data ?? [],
       questions: questionsResult.data as RecruitmentQuestion[],
+      form,
       draft: null,
     };
   }
@@ -140,6 +147,7 @@ export async function loadApplicantFormData(
     cycle,
     domains: domainsResult.data ?? [],
     questions: questionsResult.data as RecruitmentQuestion[],
+    form,
     draft: {
       id: application.id,
       status: application.status,
@@ -149,6 +157,7 @@ export async function loadApplicantFormData(
       portfolioUrl: application.portfolio_url ?? "",
       domainIds: (preferencesResult.data ?? []).map((preference) => preference.domain_id),
       answers,
+      formValues: application.form_values as FormValues,
     },
   };
 }

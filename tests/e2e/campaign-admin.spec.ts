@@ -68,6 +68,14 @@ test("regular admin creates, opens and closes recruitment while existing drafts 
   const created = await service.from("recruitment_cycles").select("id").eq("name", name).single();
   ok(created);
   cycleId = created.data!.id;
+  await page.goto(`/admin/form-builder?cycle=${cycleId}`);
+  await page.getByRole("button", { name: "Use PICT starter", exact: true }).click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Publish form", exact: true }).click();
+  await expect(
+    page.getByText("Form published. New applicants will use this version."),
+  ).toBeVisible();
+  await page.goto("/admin/recruitment");
   const visitorContext = await browser.newContext();
   const visitor = await visitorContext.newPage();
   await visitor.goto("/recruitment");
@@ -91,7 +99,8 @@ test("regular admin creates, opens and closes recruitment while existing drafts 
   await applicant.goto(`/apply?cycle=${cycleId}`);
   await applicant.getByLabel("Phone", { exact: true }).fill("1234567890");
   await applicant.getByLabel("Branch", { exact: true }).selectOption("IT");
-  await applicant.getByLabel("Division", { exact: true }).selectOption("A");
+  await applicant.getByLabel("Class / division", { exact: true }).fill("FY-IT-A");
+  await applicant.getByLabel("Year", { exact: true }).selectOption("FY");
   await expect(applicant.getByRole("button", { name: "Continue", exact: true })).toBeEnabled();
   await applicant.getByRole("button", { name: "Save Draft", exact: true }).click();
   await expect(applicant.getByText("Draft saved to your account.")).toBeVisible();

@@ -25,6 +25,7 @@ import { AdminSignup } from "./pages/admin/AdminSignup";
 import { AdminInvites } from "./pages/admin/AdminInvites";
 import { AdminOverview } from "./pages/admin/Overview";
 import { Applicants } from "./pages/admin/Applicants";
+import { FormBuilder } from "./pages/admin/FormBuilder";
 import { AdminEvents } from "./pages/admin/Events";
 import {
   Pipeline,
@@ -80,6 +81,7 @@ export const router = createBrowserRouter([
       { index: true, Component: AdminOverview },
       { path: "applicants", Component: Applicants },
       { path: "recruitment", Component: Pipeline },
+      { path: "form-builder", Component: FormBuilder },
       { path: "interviews", Component: Interviews },
       { path: "evaluations", Component: Evaluation },
       { path: "announcements", Component: AdminAnnouncements },
