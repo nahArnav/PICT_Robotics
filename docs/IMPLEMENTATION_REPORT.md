@@ -2,6 +2,12 @@
 
 Updated: 2026-10-18. Deployment repository: `nahArnav/PICT_Robotics`.
 
+## Robot arm animation correction
+
+The homepage arm now uses elbow-up inverse kinematics, a level wrist, side-face gripping and a clearance-constrained cylindrical tool path. Pickup and delivery remain interactive; each delivery locks its destination so cursor/camera movement cannot make the arm chase a moving target. Joint/body clearance, floor clearance, safe startup/reduced-motion poses, frame-rate-independent easing and portrait camera framing are covered by new tests. The camera stays near a readable side-on view instead of hiding the links behind the body.
+
+TypeScript, **19 unit tests**, the **20-case local end-to-end suite** and the environment-validated production build passed. Browser coverage includes repeated pick/place cycles with pointer movement during delivery and a 390×844 reduced-motion scene. No database migration, production record change, role/auth change or unrelated frontend enhancement is included. Further website improvements remain suggestions pending owner approval.
+
 ## Read-notification deletion update
 
 Applicants can delete their own read notifications in Announcements & notifications; admins/super admins can do the same from the notification bell. Unread items expose Mark read instead. Every deletion asks for confirmation, failures remain visible with retry, and successful deletion persists across refresh/logout/login. Public announcements and underlying application/interview data are not affected.
@@ -63,10 +69,10 @@ React/Vite/Tailwind, branding, animation assets and existing public/portal route
 | Check | Result |
 | --- | --- |
 | `pnpm typecheck` | Passed: application and test/config TypeScript |
-| `pnpm test` | 13 unit tests passed |
-| `pnpm test:database` | All 17 migrations applied to a disposable network-isolated PostgreSQL 16 container; 96 workflow/security assertions passed |
+| `pnpm test` | 19 unit tests passed, including arm motion/clearance/framing |
+| `pnpm test:database` | Previously passed: all 17 migrations and 96 workflow/security assertions in isolated PostgreSQL 16; not rerun for the arm-only frontend correction |
 | Local Supabase migrations | Applied successfully to the dedicated real Supabase PostgreSQL 17 stack |
-| `pnpm test:e2e` | Final full run: 18 tests passed in 53.3 seconds using local Auth/PostgREST/Storage and Chromium, including mobile read-notification deletion, activity/role retirement and a valid legacy admin credential |
+| `pnpm test:e2e` | Latest full run: 20 tests passed using local Auth/PostgREST/Storage and Chromium, including the arm cycle/mobile pose, notification deletion and retained applicant/admin workflows |
 | `pnpm build:production` | Public environment guard, type/unit checks and build passed; large-chunk warning remains |
 | `pnpm peers check` | No peer dependency issues |
 | `git diff --check` | Passed |
